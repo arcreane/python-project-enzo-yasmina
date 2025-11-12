@@ -29,6 +29,19 @@ class Avion:
         else:
             print(f"Altitude : {self.altitude} m")
 
+    def mettre_en_attente(self):
+        self.etat = "en attente"
+        self.vitesse = 0
+        print(f"Mise en attente : {self.id}")
+
+    def reprendre_vol(self,vitesse):
+        self.etat = "en vol"
+        self.vitesse = vitesse
+        print(f"Mise en vol : {self.id}")
+
+
+
+
 
 
 

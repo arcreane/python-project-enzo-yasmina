@@ -7,6 +7,10 @@ class Avion:
         self.id = id
         self.position = position # définie par (x,y)
         self.classe = classe #jet, ligne, cargo...
+        self.etat = "en vol" #par défaut
+
+
+    def monter(self, ):
 
 
 

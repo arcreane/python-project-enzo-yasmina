@@ -39,6 +39,12 @@ class Avion:
         self.vitesse = vitesse
         print(f"Mise en vol : {self.id}")
 
+    def urgence(self):
+        self.etat = "en urgence"
+        print(f"{self.id} doit atterir en urgence")
+
+
+
 
 
 

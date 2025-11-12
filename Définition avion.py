@@ -1,9 +1,12 @@
+import math
+from Bordures import X_MIN, X_MAX, Y_MIN, Y_MAX
 class Avion:
-    def __init__(self, altitude, carburant, vitesse, couleur, id, position, altitude_limitesup, altitude_limiteinf, classe = "inconnu", etat = "en vol"):
+    def __init__(self, altitude, carburant, vitesse, cap, couleur, id, position, altitude_limitesup, altitude_limiteinf, classe = "inconnu", etat = "en vol"):
         self.altitude = altitude # en m
         self.carburant = carburant # en %
         self.vitesse = vitesse # en km/h
         self.couleur = couleur
+        self.cap = cap
         self.id = id
         self.position = position # définie par (x,y)
         self.classe = classe #jet, ligne, cargo...
@@ -44,7 +47,20 @@ class Avion:
         print(f"{self.id} doit atterir en urgence")
 
 
-    from Bordures import X_MIN, X_MAX, Y_MIN, Y_MAX
+    def update_position(self, dt):
+        if self.etat != "en attente":
+            # Exemple avec vitesse et cap
+            dx = self.vitesse * math.cos(math.radians(self.cap)) * dt
+            dy = self.vitesse * math.sin(math.radians(self.cap)) * dt
+
+            x, y = self.position
+            x += dx
+            y += dy
+
+            x = max(X_MIN, min(X_MAX, x))
+            y = max(Y_MIN, min(Y_MAX, y))
+            self.position = (x, y)
+
 
 
 

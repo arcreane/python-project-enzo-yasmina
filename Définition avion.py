@@ -44,6 +44,10 @@ class Avion:
         print(f"{self.id} doit atterir en urgence")
 
 
+    from Bordures import X_MIN, X_MAX, Y_MIN, Y_MAX
+
+
+
 
 
 

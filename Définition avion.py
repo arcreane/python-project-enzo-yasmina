@@ -1,5 +1,5 @@
 class Avion:
-    def __init__(self, etat, altitude, carburant, vitesse, couleur, id, position, classe = "inconnu", altitude_limitesup, altitude_limiteinf):
+    def __init__(self, altitude, carburant, vitesse, couleur, id, position, altitude_limitesup, altitude_limiteinf, classe = "inconnu", etat = "en vol"):
         self.altitude = altitude # en m
         self.carburant = carburant # en %
         self.vitesse = vitesse # en km/h
@@ -7,9 +7,9 @@ class Avion:
         self.id = id
         self.position = position # définie par (x,y)
         self.classe = classe #jet, ligne, cargo...
-        self.etat = "en vol" #par défaut
-        self.altitude_limitesup = 3000 #à ajuster
-        self.altitude_limiteinf = 1000 #à ajuster
+        self.etat = etat
+        self.altitude_limitesup = altitude_limitesup #à ajuster
+        self.altitude_limiteinf = altitude_limiteinf#à ajuster
 
     def monter(self, delta = 1000 ):    #delta (en m) à ajuster plus tard
         self.altitude += delta
@@ -23,8 +23,8 @@ class Avion:
 
     def descendre(self, delta = 1000 ):     #delta (en m) à ajuster plus tard
         self.altitude -= delta
-        if  self.altitude =< self.altitude_limiteinf:
-            self.altitude = self.altitudeinf
+        if  self.altitude <= self.altitude_limiteinf:
+            self.altitude = self.altitude_limiteinf
             print(f"Altitude : {self.altitude} m. Attention à la limite d'altitude de jeu!")
         else:
             print(f"Altitude : {self.altitude} m")

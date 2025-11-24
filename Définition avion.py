@@ -87,6 +87,10 @@ class Avion:
     def vitesse_kmh(self):
         return self.vitesse*3.6
 
+    def changer_cap(self, delta_cap):
+        self.cap = (self.cap + delta_cap) % 360
+        print(f"Cap actuel : {self.cap}°")
+
 
 
 

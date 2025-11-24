@@ -91,7 +91,19 @@ class Avion:
         self.cap = (self.cap + delta_cap) % 360
         print(f"Cap actuel : {self.cap}°")
 
+    def verifier_collision(self, autre_avion, distance_min = 0):
+        x1, y1 = self.position
+        x2, y2 = autre_avion.position
+        distance = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
 
+        if distance < distance_min:
+            self.collisions += 1
+            autre_avion.collisions += 1
+
+            if self.collisions >= 3 or autre_avion.collisions >= 3:
+                print("3 collisions atteintes ! La partie s'arrête.")
+                return True  # signal pour arrêter la partie
+        return False
 
 
 

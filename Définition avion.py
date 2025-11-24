@@ -34,7 +34,7 @@ class Avion:
 
     def mettre_en_attente(self):
         self.etat = "en attente"
-        self.vitesse = 0
+        self.vitesse = 111              #m/s et 400 km/h
         print(f"Mise en attente : {self.id}")
 
     def reprendre_vol(self,vitesse):
@@ -60,7 +60,7 @@ class Avion:
             y = max(Y_MIN, min(Y_MAX, y))
             self.position = (x, y)
 
-    def accelerer(self,delta = 7, vitesse_max = 300):
+    def accelerer(self,delta = 7, vitesse_max = 83.33):
         if self.etat == "en attente" :
             print("Impossible d'accélérer : avion en attente.")
             return

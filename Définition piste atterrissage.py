@@ -11,7 +11,7 @@ class Piste:
         return not self.disponibilite
 
 
-    def
+
 
 
 

@@ -1,5 +1,4 @@
 import math
-from avion_spawn_random import generer_avion_collision
 from Bordures import X_MIN, X_MAX, Y_MIN, Y_MAX
 MAX_COLLISIONS = 3
 collisions_globales = 0
@@ -107,8 +106,11 @@ class Avion:
         self.cap = (self.cap + delta_cap) % 360
         print(f"Cap actuel : {self.cap}°")
 
-    def verifier_collision(self, autre_avion, distance_min = 50):
+    def verifier_collision(self, autre_avion, distance_min=50):
         if self is autre_avion:
+            return False
+
+        if self.etat == "crash" or autre_avion.etat == "crash":
             return False
 
         x1, y1 = self.position
@@ -123,16 +125,9 @@ class Avion:
             autre_avion.couleur = "noir"
             self.etat = "crash"
             autre_avion.etat = "crash"
-
             return True
 
-            if self.collisions >= 3 or autre_avion.collisions >= 3:
-                print("3 collisions atteintes ! La partie s'arrête.")
-                return True  # signal pour arrêter la partie
-
         return False
-
-
 
 
 def verifier_toutes_les_collisions(liste_avions):
@@ -154,4 +149,15 @@ def verifier_toutes_les_collisions(liste_avions):
     return False
 
 
+def infos(self):
+    return {"id": self.id,
+            "position": self.position,
+            "vitesse": self.vitesse,
+            "altitude": self.altitude,
+            "classe" : self.classe,
+            "etat" : self.etat}
+
+
+
+     
 

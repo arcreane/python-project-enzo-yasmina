@@ -56,8 +56,3 @@ def generer_avion_collision():
                   etat = "en vol")
 
     return avion
-
-
-
-
-

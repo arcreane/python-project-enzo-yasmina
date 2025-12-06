@@ -1,57 +1,53 @@
 import sys
+from PySide6.QtWidgets import (
+    QApplication, QMainWindow, QGraphicsScene, QGraphicsRectItem
+)
+from PySide6.QtGui import QColor
+from PySide6.QtUiTools import loadUiType
+from PySide6.QtCore import QTimer
+import math
 
-from PySide6 import QtUiTools
-from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox, QPushButton
-from PySide6.QtUiTools import QUiLoader
-from PySide6.QtCore import QFile, QIODevice, Slot
+Ui_MainWindow, BaseClass = loadUiType("mainwindow.ui")
 
 
-class MainWindow(QMainWindow):
+class MainWindow(BaseClass, Ui_MainWindow):
     def __init__(self):
         super().__init__()
+        self.setupUi(self)
 
-        # Charger le fichier .ui directement dans cette instance
-        loader = QtUiTools.QUiLoader()
-        loader.registerCustomWidget(MainWindow)
+        # Création de la scène sombre
+        self.scene = QGraphicsScene(0, 0, 832, 480)
+        self.scene.setBackgroundBrush(QColor(30, 30, 30))  # ZONE DE VOL SOMBRE
 
-        # Important: charger avec self comme parent pour que les slots soient trouvés
-        ui_file_path = "demo.ui"
+        # Association de la scène au GraphicsView
+        self.Zonedevol.setScene(self.scene)
 
-        # Méthode alternative: utiliser loadUi (si disponible)
-        from PySide6.QtUiTools import loadUiType
+        # Création de la piste d'atterrissage blanche
+        runway_width = 200
+        runway_height = 30
+        self.runway = QGraphicsRectItem(0, 0, runway_width, runway_height)
+        self.runway.setBrush(QColor("white"))  # PISTE EN BLANC
 
-        try:
-            # Charger et appliquer l'UI directement sur self
-            ui_class, _ = loadUiType(ui_file_path)
-            self.ui = ui_class()
-            self.ui.setupUi(self)
-        except:
-            # Fallback: méthode manuelle
-            from PySide6.QtCore import QFile, QIODevice
-            ui_file = QFile(ui_file_path)
-            if not ui_file.open(QIODevice.ReadOnly):
-                print(f"Erreur: Impossible d'ouvrir le fichier UI")
-                sys.exit(-1)
+        # Centrage de la piste
+        x_center = (self.scene.width() - runway_width) / 2
+        y_center = (self.scene.height() - runway_height) / 2
+        self.runway.setPos(x_center, y_center)
 
-            # Charger avec self comme parent
-            loader.load(ui_file, self)
-            ui_file.close()
+        # Ajout dans la scène
+        self.scene.addItem(self.runway)
 
-
+        self.plane = QGraphicsRectItem(0,0,10,10)
+        self.plane.setPos(100, 100)
+        self.scene.addItem(self.plane)
+        self.plane.setBrush(QColor("green"))
 
 
-    @Slot()
-    def hello(self):
-        """Slot appelé lorsque le bouton est cliqué"""
-        QMessageBox.information(self, "Message", "Hello! Le bouton a été cliqué!")
-        print("Hello from slot!")
 
 
-    @Slot()
-    def demo(self):
-        """Slot appelé lorsque le bouton est cliqué"""
-        QMessageBox.information(self, "Message", "Hello! Le bouton a été cliqué!")
-        print("Hello from slot!")
+
+
+
+
 def main():
     app = QApplication(sys.argv)
     window = MainWindow()
@@ -61,3 +57,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+

@@ -15,6 +15,7 @@ class Avion:
         self.altitude_limiteinf = altitude_limiteinf#à ajuster
         self.collisions = 0
 
+
     def monter(self, delta = 1000 ):    #delta (en m) à ajuster plus tard
         self.altitude += delta
         if self.altitude >= self.altitude_limitesup:

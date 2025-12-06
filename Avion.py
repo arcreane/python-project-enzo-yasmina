@@ -1,6 +1,10 @@
 import math
 from avion_spawn_random import generer_avion_collision
 from Bordures import X_MIN, X_MAX, Y_MIN, Y_MAX
+MAX_COLLISIONS = 3
+collisions_globales = 0
+
+
 class Avion:
     def __init__(self, altitude, carburant, vitesse, cap, couleur, id, position, altitude_limitesup, altitude_limiteinf, classe = "inconnu", etat = "en vol"):
         self.altitude = altitude # en m
@@ -103,20 +107,51 @@ class Avion:
         self.cap = (self.cap + delta_cap) % 360
         print(f"Cap actuel : {self.cap}°")
 
-    def verifier_collision(self, autre_avion, distance_min = 0):
+    def verifier_collision(self, autre_avion, distance_min = 50):
+        if self is autre_avion:
+            return False
+
         x1, y1 = self.position
         x2, y2 = autre_avion.position
         distance = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
 
         if distance < distance_min:
+            print(f"COLLISION entre Avion {self.id} et Avion {autre_avion.id}")
             self.collisions += 1
             autre_avion.collisions += 1
+            self.couleur = "noir"
+            autre_avion.couleur = "noir"
+            self.etat = "crash"
+            autre_avion.etat = "crash"
+
+            return True
 
             if self.collisions >= 3 or autre_avion.collisions >= 3:
                 print("3 collisions atteintes ! La partie s'arrête.")
                 return True  # signal pour arrêter la partie
 
         return False
+
+
+
+
+def verifier_toutes_les_collisions(liste_avions):
+    global collisions_globales
+
+    for i in range(len(liste_avions)):
+        for j in range(i + 1, len(liste_avions)):
+            avion1 = liste_avions[i]
+            avion2 = liste_avions[j]
+
+            if avion1.verifier_collision(avion2):
+                collisions_globales += 1
+                print(f"COLLISIONS TOTALES : {collisions_globales}/{MAX_COLLISIONS}")
+
+                if collisions_globales >= MAX_COLLISIONS:
+                    print("3 COLLISIONS ATTEINTES = FIN DE PARTIE")
+                    return True
+
+    return False
 
 
 

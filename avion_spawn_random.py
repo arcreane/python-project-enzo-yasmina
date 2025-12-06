@@ -9,6 +9,9 @@ zones_conflit = [(X_MAX*0.3, Y_MAX*0.5), (X_MAX*0.7, Y_MAX*0.5), (X_MAX*0.9, Y_M
 altitudes_conflit = [6000, 7000 ,8000]
 vitesses = [140 ,180, 240, 300]
 
+classes_possibles = ["jet", "ligne", "cargo"]
+
+
 def normal(vx, vy):
     norme = m.sqrt(vx**2 + vy**2)
     return vx/norme, vy/norme
@@ -43,16 +46,18 @@ def generer_avion_collision():
     cap = m.degrees(m.atan2(vy, vx))
     altitude = random.choice(altitudes_conflit)
 
-    avion = Avion(altitude = altitude,
-                  carburant = 100,
-                  vitesse = vitesse,
-                  cap = cap,
-                  couleur = "rouge",
-                  id = ID_COMPTEUR,
-                  position = position,
-                  altitude_limitesup = 9000,
-                  altitude_limiteinf = 5000,
-                  classe = "collision",
-                  etat = "en vol")
+    classe = random.choice(classes_possibles)
+
+    avion = Avion(
+        altitude=altitude,
+        carburant=100,
+        vitesse=vitesse,
+        cap=cap,
+        id=ID_COMPTEUR,
+        position=position,
+        altitude_limitesup=9000,
+        altitude_limiteinf=5000,
+        classe=classe,
+        etat="en vol")
 
     return avion

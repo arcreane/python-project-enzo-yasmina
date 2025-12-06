@@ -1,47 +1,74 @@
 import math
 from Bordures import X_MIN, X_MAX, Y_MIN, Y_MAX
+
 MAX_COLLISIONS = 3
 collisions_globales = 0
 
+CLASSES_AVIONS = {
+    "jet": {
+        "vmin": 180,
+        "vmax": 300,
+        "montee": 1200,
+        "descente": 1200,
+        "couleur": "bleu"
+    },
+    "ligne": {
+        "vmin": 140,
+        "vmax": 260,
+        "montee": 900,
+        "descente": 900,
+        "couleur": "vert"
+    },
+    "cargo": {
+        "vmin": 100,
+        "vmax": 200,
+        "montee": 700,
+        "descente": 700,
+        "couleur": "orange"
+    }
+}
+
 
 class Avion:
-    def __init__(self, altitude, carburant, vitesse, cap, couleur, id, position, altitude_limitesup, altitude_limiteinf, classe = "inconnu", etat = "en vol"):
-        self.altitude = altitude # en m
-        self.carburant = carburant # en %
-        self.vitesse = vitesse # en m/s
-        self.couleur = couleur
+    def __init__(self, altitude, carburant, vitesse, cap, id, position,
+                 altitude_limitesup, altitude_limiteinf, classe="ligne", etat="en vol"):
+
+        self.classe = classe
+        self.etat = etat
+
+        data = CLASSES_AVIONS[classe]
+        self.vitesse_min = data["vmin"]
+        self.vitesse_max = data["vmax"]
+        self.delta_montee = data["montee"]
+        self.delta_descente = data["descente"]
+        self.couleur = data["couleur"]
+
+        self.altitude = altitude
+        self.carburant = carburant
+        self.vitesse = max(self.vitesse_min, min(vitesse, self.vitesse_max))
         self.cap = cap
         self.id = id
-        self.position = position # définie par (x,y)
-        self.classe = classe #jet, ligne, cargo...
-        self.etat = etat
-        self.altitude_limitesup = altitude_limitesup #à ajuster
-        self.altitude_limiteinf = altitude_limiteinf#à ajuster
+        self.position = position
+        self.altitude_limitesup = altitude_limitesup
+        self.altitude_limiteinf = altitude_limiteinf
         self.collisions = 0
 
-    def monter(self, delta = 1000 ):    #delta (en m) à ajuster plus tard
-        self.altitude += delta
+    def monter(self):
+        self.altitude += self.delta_montee
         if self.altitude >= self.altitude_limitesup:
             self.altitude = self.altitude_limitesup
-            print(f"Altitude : {self.altitude} m. Attention à la limite d'altitude de jeu !")
-        else:
-            print(f"Altitude : {self.altitude} m")
 
-
-    def descendre(self, delta = 1000 ):     #delta (en m) à ajuster plus tard
-        self.altitude -= delta
-        if  self.altitude <= self.altitude_limiteinf:
+    def descendre(self):
+        self.altitude -= self.delta_descente
+        if self.altitude <= self.altitude_limiteinf:
             self.altitude = self.altitude_limiteinf
-            print(f"Altitude : {self.altitude} m. Attention à la limite d'altitude de jeu!")
-        else:
-            print(f"Altitude : {self.altitude} m")
 
     def mettre_en_attente(self):
         self.etat = "en attente"
         self.vitesse = 0
         print(f"Mise en attente : {self.id}")
 
-    def reprendre_vol(self,vitesse):
+    def reprendre_vol(self, vitesse):
         self.etat = "en vol"
         self.vitesse = vitesse
         print(f"Mise en vol : {self.id}")
@@ -49,7 +76,6 @@ class Avion:
     def urgence(self):
         self.etat = "en urgence"
         print(f"{self.id} doit atterir en urgence")
-
 
     def gerer_bordures(self):
         x, y = self.position
@@ -62,11 +88,10 @@ class Avion:
 
         self.cap %= 360
 
-
     def update_position(self, dt):
         if self.etat != "en attente":
             dx = self.vitesse * math.cos(math.radians(self.cap)) * dt
-            dy = self.vitesse * math.sin(math.radians(self.cap)) * dt       #dt en s et vitesse en m/s
+            dy = self.vitesse * math.sin(math.radians(self.cap)) * dt
 
             x, y = self.position
             x += dx
@@ -74,33 +99,22 @@ class Avion:
             self.position = (x, y)
             self.gerer_bordures()
 
-    def accelerer(self,delta = 7, vitesse_max = 300):
-        if self.etat == "en attente" :
-            print("Impossible d'accélérer : avion en attente.")
+    def accelerer(self, delta=10):
+        if self.etat == "en attente":
             return
-
         self.vitesse += delta
-        if self.vitesse > vitesse_max:
-            self.vitesse = vitesse_max
-            print(f"Vitesse maximale atteinte : {self.vitesse:.1f} m/s")
-        else:
-            print(f"Nouvelle vitesse : {self.vitesse:.1f} m/s")
+        if self.vitesse > self.vitesse_max:
+            self.vitesse = self.vitesse_max
 
-
-    def decelerer(self, delta=7, vitesse_min=0):
-        if self.etat == "en attente" :
-            print("Impossible de décélérer : avion en attente.")
+    def decelerer(self, delta=10):
+        if self.etat == "en attente":
             return
-
         self.vitesse -= delta
-        if self.vitesse < vitesse_min:
-            self.vitesse = vitesse_min
-            print(f"Vitesse minimale atteinte : {self.vitesse:.1f} m/s")
-        else:
-            print(f"Nouvelle vitesse : {self.vitesse:.1f} m/s")
+        if self.vitesse < self.vitesse_min:
+            self.vitesse = self.vitesse_min
 
     def vitesse_kmh(self):
-        return self.vitesse*3.6
+        return self.vitesse * 3.6
 
     def changer_cap(self, delta_cap):
         self.cap = (self.cap + delta_cap) % 360
@@ -129,6 +143,19 @@ class Avion:
 
         return False
 
+    def infos(self):
+        return {
+            "id": self.id,
+            "position": self.position,
+            "vitesse": self.vitesse,
+            "altitude": self.altitude,
+            "classe": self.classe,
+            "etat": self.etat
+        }
+
+    def est_pose(self):
+        return self.etat == "posé"
+
 
 def verifier_toutes_les_collisions(liste_avions):
     global collisions_globales
@@ -147,17 +174,3 @@ def verifier_toutes_les_collisions(liste_avions):
                     return True
 
     return False
-
-
-def infos(self):
-    return {"id": self.id,
-            "position": self.position,
-            "vitesse": self.vitesse,
-            "altitude": self.altitude,
-            "classe" : self.classe,
-            "etat" : self.etat}
-
-
-
-     
-

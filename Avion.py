@@ -47,6 +47,19 @@ class Avion:
         self.etat = "en urgence"
         print(f"{self.id} doit atterir en urgence")
 
+
+    def gerer_bordures(self):
+        x, y = self.position
+
+        if x <= X_MIN + 10 or x >= X_MAX - 10:
+            self.cap = 100 - self.cap
+
+        if y <= Y_MIN + 10 or y >= Y_MAX - 10:
+            self.cap = -self.cap
+
+        self.cap %= 360
+
+
     def update_position(self, dt):
         if self.etat != "en attente":
             dx = self.vitesse * math.cos(math.radians(self.cap)) * dt
@@ -55,10 +68,8 @@ class Avion:
             x, y = self.position
             x += dx
             y += dy
-
-            x = max(X_MIN, min(X_MAX, x))
-            y = max(Y_MIN, min(Y_MAX, y))
             self.position = (x, y)
+            self.gerer_bordures()
 
     def accelerer(self,delta = 7, vitesse_max = 300):
         if self.etat == "en attente" :
@@ -106,3 +117,6 @@ class Avion:
                 return True  # signal pour arrêter la partie
 
         return False
+
+
+

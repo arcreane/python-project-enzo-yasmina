@@ -25,8 +25,27 @@ CLASSES_AVIONS = {
         "montee": 700,
         "descente": 700,
         "couleur": "orange"
-    }
-}
+    }}
+
+ICONS_AVIONS = {
+    "jet": {
+        "vert": "assets/avions/avion_cessna_vert.png",
+        "orange": "assets/avions/avion_cessna_orange.png",
+        "rouge": "assets/avions/avion_cessna_rouge.png",
+        "noir": "assets/avions/avion_cessna_noir.png",
+    },
+    "ligne": {
+        "vert": "assets/avions/avion_ligne_vert.png",
+        "orange": "assets/avions/avion_ligne_orange.png",
+        "rouge": "assets/avions/avion_ligne_rouge.png",
+        "noir": "assets/avions/avion_ligne_noir.png",
+    },
+    "cargo": {
+        "vert": "assets/avions/avion_cargo_vert.png",
+        "orange": "assets/avions/avion_cargo_orange.png",
+        "rouge": "assets/avions/avion_cargo_rouge.png",
+        "noir": "assets/avions/avion_cargo_noir.png",}}
+
 
 
 class Avion:
@@ -52,6 +71,8 @@ class Avion:
         self.altitude_limitesup = altitude_limitesup
         self.altitude_limiteinf = altitude_limiteinf
         self.collisions = 0
+        self.icone = ICONS_AVIONS[self.classe][self.couleur]
+
 
     def monter(self):
         self.altitude += self.delta_montee
@@ -137,6 +158,9 @@ class Avion:
             autre_avion.collisions += 1
             self.couleur = "noir"
             autre_avion.couleur = "noir"
+            self.icone = ICONS_AVIONS[self.classe]["noir"]
+            autre_avion.icone = ICONS_AVIONS[autre_avion.classe]["noir"]
+
             self.etat = "crash"
             autre_avion.etat = "crash"
             return True
@@ -155,6 +179,9 @@ class Avion:
 
     def est_pose(self):
         return self.etat == "posé"
+
+    def get_icon_path(self):
+        return f"assets/avions/avion_{self.classe}"
 
 
 def verifier_toutes_les_collisions(liste_avions):

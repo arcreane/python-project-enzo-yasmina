@@ -49,7 +49,7 @@ class MainWindow(BaseClass, Ui_MainWindow):
 
 
     def spawn_avion(self):
-        if len(self.avions) >= 5:  # ✅ MAX 5 avions
+        if len(self.avions) >= 5:  #  MAX 5 avions
             return
 
         avion = Avion(

@@ -76,15 +76,14 @@ class MainWindow(BaseClass, Ui_MainWindow):
         self.timer.timeout.connect(self.update_game)
         self.timer.start(30)
 
-
     def update_game(self):
         now = time.time()
-        dt = now - self.last_time
+
+        dt = min(now - self.last_time, 0.05)
+
         self.last_time = now
 
-
         self.avion.update_position(dt)
-
 
         x, y = self.avion.position
         self.plane_item.setPos(x, y)

@@ -77,10 +77,10 @@ class Avion:
         self.altitude = max(self.altitude - self.delta_descente, self.altitude_limiteinf)
 
     def accelerer(self):
-        self.vitesse = min(self.vitesse + 20, self.vitesse_max)
+        self.vitesse = min(self.vitesse + 50, self.vitesse_max)
 
     def decelerer(self):
-        self.vitesse = max(self.vitesse - 20, self.vitesse_min)
+        self.vitesse = max(self.vitesse - 50, self.vitesse_min)
 
     def mettre_en_attente(self):
         self.etat = "en attente"

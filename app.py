@@ -83,6 +83,8 @@ class MainWindow(BaseClass, Ui_MainWindow):
         # === QUITTER ===
         if hasattr(self, "btnQuitter"):
             self.btnQuitter.clicked.connect(self.quitter_relay)
+        elif hasattr(self, "quitter"):  # ✅ au cas où il s'appelle "quitter"
+            self.quitter.clicked.connect(self.quitter_relay)
         # === TIMER DE NIVEAU ===
         self.temps_ecoule = 0  # en secondes
         self.niveau_timer = QTimer()
@@ -92,7 +94,7 @@ class MainWindow(BaseClass, Ui_MainWindow):
     # QUITTER
     # -------------------------
     def quitter_relay(self):
-        QApplication.quit()
+        self.close()  # ou QApplication.instance().quit()
 
     # -------------------------
     # SPAWN AVION

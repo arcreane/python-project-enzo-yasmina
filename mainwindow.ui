@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1036</width>
-    <height>717</height>
+    <width>1040</width>
+    <height>722</height>
    </rect>
   </property>
   <property name="palette">
@@ -97,7 +97,7 @@
       <enum>QFrame::Raised</enum>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_2">
-      <item alignment="Qt::AlignHCenter">
+      <item>
        <widget class="QGroupBox" name="groupBox">
         <property name="title">
          <string>Stats Avion</string>
@@ -120,8 +120,8 @@
           <rect>
            <x>10</x>
            <y>150</y>
-           <width>58</width>
-           <height>19</height>
+           <width>71</width>
+           <height>21</height>
           </rect>
          </property>
          <property name="text">
@@ -153,10 +153,10 @@
         <widget class="QLabel" name="label_4">
          <property name="geometry">
           <rect>
-           <x>20</x>
+           <x>7</x>
            <y>250</y>
-           <width>58</width>
-           <height>19</height>
+           <width>71</width>
+           <height>20</height>
           </rect>
          </property>
          <property name="text">
@@ -206,6 +206,22 @@
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+        <widget class="QProgressBar" name="jaugeCarburant">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>310</y>
+           <width>118</width>
+           <height>23</height>
+          </rect>
+         </property>
+         <property name="value">
+          <number>0</number>
+         </property>
+         <property name="textVisible">
+          <bool>true</bool>
          </property>
         </widget>
        </widget>
@@ -341,6 +357,13 @@
           <enum>QFrame::Raised</enum>
          </property>
          <layout class="QGridLayout" name="gridLayout">
+          <item row="1" column="0">
+           <widget class="QPushButton" name="accelerer">
+            <property name="text">
+             <string>Accélérer</string>
+            </property>
+           </widget>
+          </item>
           <item row="3" column="2">
            <widget class="QSpinBox" name="spinBox"/>
           </item>
@@ -395,13 +418,6 @@
             </property>
            </widget>
           </item>
-          <item row="3" column="0">
-           <widget class="QPushButton" name="decelerer">
-            <property name="text">
-             <string>Décélérer</string>
-            </property>
-           </widget>
-          </item>
           <item row="3" column="1">
            <widget class="QPushButton" name="descendre">
             <property name="text">
@@ -409,10 +425,10 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="0">
-           <widget class="QPushButton" name="accelerer">
+          <item row="3" column="0">
+           <widget class="QPushButton" name="decelerer">
             <property name="text">
-             <string>Accélérer</string>
+             <string>Décélérer</string>
             </property>
            </widget>
           </item>
@@ -557,7 +573,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1036</width>
+     <width>1040</width>
      <height>25</height>
     </rect>
    </property>

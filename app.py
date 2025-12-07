@@ -205,6 +205,8 @@ class MainWindow(BaseClass, Ui_MainWindow):
                 self.altitude.setText("—")
                 self.carburant.setText("—")
                 self.vitesse.setText("—")
+            if hasattr(self, "jaugeCarburant"):  # ✅ AJOUTER
+                self.jaugeCarburant.setValue(0)
             return
 
         a = self.avion_en_cours
@@ -213,6 +215,18 @@ class MainWindow(BaseClass, Ui_MainWindow):
             self.altitude.setText(f"{int(a.altitude)} m")
             self.carburant.setText(f"{int(a.carburant)} %")
             self.vitesse.setText(f"{int(a.vitesse)} km/h")
+
+        # ✅ MAJ DE LA JAUGE
+        if hasattr(self, "jaugeCarburant"):
+            self.jaugeCarburant.setValue(int(a.carburant))
+
+            # Changement de couleur selon le niveau
+            if a.carburant < 20:
+                self.jaugeCarburant.setStyleSheet("QProgressBar::chunk { background-color: red; }")
+            elif a.carburant < 50:
+                self.jaugeCarburant.setStyleSheet("QProgressBar::chunk { background-color: orange; }")
+            else:
+                self.jaugeCarburant.setStyleSheet("QProgressBar::chunk { background-color: green; }")
 
     # -------------------------
     # RELAYS AVIONS

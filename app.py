@@ -54,7 +54,9 @@ class MainWindow(BaseClass, Ui_MainWindow):
         self.spawn_timer = QTimer()
         self.spawn_timer.timeout.connect(self.spawn_avion)
         self.spawn_timer.start(5000)
+
         self.en_pause = False
+
         # focus clavier
         self.setFocusPolicy(Qt.StrongFocus)
 
@@ -72,7 +74,6 @@ class MainWindow(BaseClass, Ui_MainWindow):
             self.decelerer.clicked.connect(self.decelerer_relay)
         if hasattr(self, "circuit"):
             self.circuit.clicked.connect(self.mettre_en_attente_relay)
-
         if hasattr(self, "atterrir"):
             self.atterrir.clicked.connect(self.atterrir_relay)
 
@@ -81,6 +82,10 @@ class MainWindow(BaseClass, Ui_MainWindow):
 
         if hasattr(self, "reprendre"):
             self.reprendre.clicked.connect(self.reprendre_jeu_relay)
+
+        # ✅ BOUTON QUITTER
+        if hasattr(self, "btnQuitter"):
+            self.btnQuitter.clicked.connect(self.quitter_relay)
 
     # -------------------------
     # SPAWN AVION
@@ -166,7 +171,7 @@ class MainWindow(BaseClass, Ui_MainWindow):
             self.spawn_timer.stop()
 
     # -------------------------
-    # ✅ SÉLECTION SOURIS RÉELLE
+    # ✅ SÉLECTION SOURIS
     # -------------------------
     def selection_changed(self):
         items = self.scene.selectedItems()
@@ -214,6 +219,9 @@ class MainWindow(BaseClass, Ui_MainWindow):
         if self.avion_en_cours:
             self.avion_en_cours.atterrir()
 
+    # -------------------------
+    # PAUSE / REPRISE
+    # -------------------------
     def pause_relay(self):
         if not self.en_pause:
             self.en_pause = True
@@ -224,10 +232,16 @@ class MainWindow(BaseClass, Ui_MainWindow):
     def reprendre_jeu_relay(self):
         if self.en_pause:
             self.en_pause = False
-            self.last_time = time.time()  # ✅ empêche le bond temporel
+            self.last_time = time.time()
             self.timer.start(30)
             self.spawn_timer.start(5000)
             print("JEU REPRIS")
+
+    # -------------------------
+    # ✅ QUITTER
+    # -------------------------
+    def quitter_relay(self):
+        QApplication.quit()
 
 
 def main():

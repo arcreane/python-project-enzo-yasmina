@@ -117,8 +117,11 @@ class Avion:
 
     def update_position(self, dt):
         if self.etat != "en attente":
-            dx = self.vitesse * math.cos(math.radians(self.cap)) * dt
-            dy = -self.vitesse * math.sin(math.radians(self.cap)) * dt
+            # ✅ COEFFICIENT DE RÉDUCTION (TRÈS IMPORTANT)
+            COEFF_VITESSE = 0.1  # ← tu peux même mettre 0.05 si tu veux encore plus lent
+
+            dx = self.vitesse * COEFF_VITESSE * math.cos(math.radians(self.cap)) * dt
+            dy = self.vitesse * COEFF_VITESSE * math.sin(math.radians(self.cap)) * dt
 
             x, y = self.position
             x += dx

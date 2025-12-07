@@ -78,6 +78,8 @@ class Avion:
         self.collisions = 0
 
         # ✅ ICÔNE CORRECTEMENT ASSOCIÉE
+        if self.couleur not in ICONS_AVIONS[self.classe]:
+            self.couleur = "vert"  # ✅ sécurité
         self.icone = ICONS_AVIONS[self.classe][self.couleur]
 
     def monter(self):
@@ -135,19 +137,21 @@ class Avion:
         self.position = (x, y)
 
     def update_position(self, dt):
-        if self.etat != "en attente":
+        # ✅ Un avion crashé NE BOUGE PLUS
+        if self.etat in ["en attente", "crash"]:
+            return
 
-            COEFF_VITESSE = 0.15
+        COEFF_VITESSE = 0.15
 
-            dx = self.vitesse * COEFF_VITESSE * math.cos(math.radians(self.cap)) * dt
-            dy = self.vitesse * COEFF_VITESSE * math.sin(math.radians(self.cap)) * dt
+        dx = self.vitesse * COEFF_VITESSE * math.cos(math.radians(self.cap)) * dt
+        dy = self.vitesse * COEFF_VITESSE * math.sin(math.radians(self.cap)) * dt
 
-            x, y = self.position
-            x += dx
-            y += dy
-            self.position = (x, y)
+        x, y = self.position
+        x += dx
+        y += dy
+        self.position = (x, y)
 
-            self.gerer_bordures()
+        self.gerer_bordures()
 
     def verifier_collision(self, autre_avion, distance_min=50):
         if self is autre_avion:
@@ -173,6 +177,10 @@ class Avion:
 
             self.etat = "crash"
             autre_avion.etat = "crash"
+
+            self.vitesse = 0
+            autre_avion.vitesse = 0
+
             return True
 
         return False

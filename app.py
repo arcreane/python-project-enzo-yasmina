@@ -1,10 +1,13 @@
 import sys
+import time
 from PySide6.QtWidgets import (
-    QApplication, QMainWindow, QGraphicsScene, QGraphicsRectItem, QGraphicsPixmapItem
+    QApplication, QGraphicsScene, QGraphicsRectItem, QGraphicsPixmapItem
 )
-from PySide6.QtGui import QColor,QPixmap
+from PySide6.QtGui import QColor, QPixmap
 from PySide6.QtUiTools import loadUiType
+from PySide6.QtCore import QTimer
 
+from Avion import Avion
 
 Ui_MainWindow, BaseClass = loadUiType("mainwindow.ui")
 
@@ -14,31 +17,61 @@ class MainWindow(BaseClass, Ui_MainWindow):
         super().__init__()
         self.setupUi(self)
 
-        # Création de la scène sombre
-        self.scene = QGraphicsScene(0, 0, 832, 480)
-        self.scene.setBackgroundBrush(QColor(30, 30, 30))  # ZONE DE VOL SOMBRE
 
-        # Association de la scène au GraphicsView
+        self.scene = QGraphicsScene(0, 0, 832, 480)
+        self.scene.setBackgroundBrush(QColor(30, 30, 30))
         self.Zonedevol.setScene(self.scene)
 
-        # Création de la piste d'atterrissage blanche
+
         runway_width = 200
         runway_height = 30
         self.runway = QGraphicsRectItem(0, 0, runway_width, runway_height)
-        self.runway.setBrush(QColor("white"))  # PISTE EN BLANC
+        self.runway.setBrush(QColor("white"))
 
-        # Centrage de la piste
         x_center = (self.scene.width() - runway_width) / 2
         y_center = (self.scene.height() - runway_height) / 2
         self.runway.setPos(x_center, y_center)
 
-        # Ajout dans la scène
         self.scene.addItem(self.runway)
 
-        pixmap = QPixmap("assets/avions/avion_jet_orange.png").scaled(65,65)
-        self.plane = QGraphicsPixmapItem(pixmap)
-        self.plane.setPos(100, 100)
-        self.scene.addItem(self.plane)
+
+        self.avion = Avion(
+            altitude=7000,
+            carburant=100,
+            vitesse=50,
+            cap=0,  # vers la droite
+            id=1,
+            position=(100, 200),
+            altitude_limitesup=9000,
+            altitude_limiteinf=5000,
+            classe="jet",
+            etat="en vol"
+        )
+
+
+        pixmap = QPixmap("assets/avions/avion_jet_orange.png").scaled(60, 60)
+        self.plane_item = QGraphicsPixmapItem(pixmap)
+        self.scene.addItem(self.plane_item)
+
+
+        self.last_time = time.time()
+
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.update_game)
+        self.timer.start(30)  # 30 ms ≈ 33 FPS ✅
+
+
+    def update_game(self):
+        now = time.time()
+        dt = now - self.last_time
+        self.last_time = now
+
+
+        self.avion.update_position(dt)
+
+
+        x, y = self.avion.position
+        self.plane_item.setPos(x, y)
 
 
 def main():
@@ -50,6 +83,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-

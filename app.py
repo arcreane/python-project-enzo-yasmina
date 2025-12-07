@@ -2,7 +2,7 @@ import sys
 import time
 import random
 from PySide6.QtWidgets import (
-    QApplication, QGraphicsScene, QGraphicsRectItem, QGraphicsPixmapItem
+    QApplication, QGraphicsScene, QGraphicsRectItem, QGraphicsPixmapItem, QMainWindow
 )
 from PySide6.QtGui import QColor, QPixmap
 from PySide6.QtUiTools import loadUiType
@@ -76,6 +76,10 @@ class MainWindow(BaseClass, Ui_MainWindow):
             self.circuit.clicked.connect(self.mettre_en_attente_relay)
         if hasattr(self, "atterrir"):
             self.atterrir.clicked.connect(self.atterrir_relay)
+        if hasattr(self, "pause"):
+            self.pause.clicked.connect(self.pause_relay)
+        if hasattr(self, "quitter"):
+            self.quitter.clicked.connect(self.quitter_relay)
 
         if hasattr(self, "pause"):
             self.pause.clicked.connect(self.pause_relay)
@@ -250,6 +254,9 @@ def main():
     window.show()
     sys.exit(app.exec())
 
+
+    def quitter_relay(self):
+        QApplication.quit()
 
 if __name__ == "__main__":
     main()

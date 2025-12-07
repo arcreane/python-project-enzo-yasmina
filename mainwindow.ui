@@ -501,21 +501,21 @@
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_3">
           <item>
-           <widget class="QPushButton" name="pushButton_2">
+           <widget class="QPushButton" name="pause">
             <property name="text">
-             <string>Pause</string>
+             <string>Pause/reprendre</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton_7">
+           <widget class="QPushButton" name="recommencer">
             <property name="text">
              <string>Recommencer</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton_8">
+           <widget class="QPushButton" name="quitter">
             <property name="text">
              <string>Quitter</string>
             </property>

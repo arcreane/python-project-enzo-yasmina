@@ -60,7 +60,9 @@ class MainWindow(BaseClass, Ui_MainWindow):
 
         # ✅ sélection souris
         self.scene.selectionChanged.connect(self.selection_changed)
-
+        # === RECOMMENCER ===
+        if hasattr(self, "btnRecommencer"):  # ou "recommencer" selon le nom dans ton .ui
+            self.btnRecommencer.clicked.connect(self.recommencer)
         # === CONNEXIONS BOUTONS AVIONS ===
         if hasattr(self, "monter"):
             self.monter.clicked.connect(self.monter_relay)
@@ -81,7 +83,11 @@ class MainWindow(BaseClass, Ui_MainWindow):
         # === QUITTER ===
         if hasattr(self, "btnQuitter"):
             self.btnQuitter.clicked.connect(self.quitter_relay)
-
+        # === TIMER DE NIVEAU ===
+        self.temps_ecoule = 0  # en secondes
+        self.niveau_timer = QTimer()
+        self.niveau_timer.timeout.connect(self.update_niveau)
+        self.niveau_timer.start(1000)  # toutes les secondes
     # -------------------------
     # QUITTER
     # -------------------------
@@ -239,6 +245,7 @@ class MainWindow(BaseClass, Ui_MainWindow):
             self.en_pause = True
             self.timer.stop()
             self.spawn_timer.stop()
+            self.niveau_timer.stop()  # ✅ AJOUTER
             if hasattr(self, "pause"):
                 self.pause.setText("Reprendre")
             print("JEU EN PAUSE")
@@ -247,9 +254,56 @@ class MainWindow(BaseClass, Ui_MainWindow):
             self.last_time = time.time()
             self.timer.start(30)
             self.spawn_timer.start(5000)
+            self.niveau_timer.start(1000)  # ✅ AJOUTER
             if hasattr(self, "pause"):
                 self.pause.setText("Pause")
             print("JEU REPRIS")
+
+    def recommencer(self):
+        """Remet le jeu à zéro"""
+        self.timer.stop()
+        self.spawn_timer.stop()
+        self.niveau_timer.stop()  # ✅ AJOUTER
+
+        for item in self.plane_items:
+            self.scene.removeItem(item)
+
+        self.avions.clear()
+        self.plane_items.clear()
+        self.avion_en_cours = None
+        self.afficher_infos_avion()
+        self.next_id = 0
+
+        self.temps_ecoule = 0  # ✅ RÉINITIALISER LE TIMER
+        if hasattr(self, "timerNiveau"):
+            self.timerNiveau.setText("00:00")
+
+        self.en_pause = False
+        if hasattr(self, "pause"):
+            self.pause.setText("Pause")
+
+        self.last_time = time.time()
+        self.timer.start(30)
+        self.spawn_timer.start(5000)
+        self.niveau_timer.start(1000)  # ✅ REDÉMARRER
+
+        print("🔄 JEU REDÉMARRÉ")
+
+    def update_niveau(self):
+        """Met à jour le timer de niveau"""
+        if self.en_pause:
+            return
+
+        self.temps_ecoule += 1
+
+        # Conversion en minutes:secondes
+        minutes = self.temps_ecoule // 60
+        secondes = self.temps_ecoule % 60
+
+        # Affichage
+        if hasattr(self, "timerNiveau"):  # ou le nom que tu donnes au label
+            self.timerNiveau.setText(f"{minutes:02d}:{secondes:02d}")
+
 
 
 def main():

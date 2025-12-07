@@ -2,7 +2,8 @@ import sys
 import time
 import random
 from PySide6.QtWidgets import (
-    QApplication, QGraphicsScene, QGraphicsRectItem, QGraphicsPixmapItem
+    QApplication, QGraphicsScene, QGraphicsRectItem, QGraphicsPixmapItem,
+    QDialog, QVBoxLayout, QPushButton, QLabel
 )
 from PySide6.QtGui import QColor, QPixmap
 from PySide6.QtUiTools import loadUiType
@@ -13,10 +14,63 @@ from Avion import Avion, verifier_toutes_les_collisions
 Ui_MainWindow, BaseClass = loadUiType("mainwindow.ui")
 
 
+class MenuDemarrage(QDialog):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Contrôleur Aérien - Choix de Difficulté")
+        self.setFixedSize(450, 380)
+
+        self.difficulte_choisie = "normal"  # par défaut
+
+        layout = QVBoxLayout()
+
+        # Titre
+        titre = QLabel("🛫 Choisissez votre difficulté 🛬")
+        titre.setStyleSheet("font-size: 18px; font-weight: bold; margin: 20px;")
+        titre.setAlignment(Qt.AlignCenter)
+        layout.addWidget(titre)
+
+        # Boutons de difficulté
+        btn_facile = QPushButton("😊 Facile\n(Avion toutes les 8s)")
+        btn_facile.setStyleSheet("padding: 15px; font-size: 14px;")
+        btn_facile.clicked.connect(lambda: self.choisir("facile"))
+        layout.addWidget(btn_facile)
+
+        btn_normal = QPushButton("✈️ Normal\n(Avion toutes les 5s)")
+        btn_normal.setStyleSheet("padding: 15px; font-size: 14px;")
+        btn_normal.clicked.connect(lambda: self.choisir("normal"))
+        layout.addWidget(btn_normal)
+
+        btn_difficile = QPushButton("🔥 Difficile\n(Avion toutes les 3s)")
+        btn_difficile.setStyleSheet("padding: 15px; font-size: 14px;")
+        btn_difficile.clicked.connect(lambda: self.choisir("difficile"))
+        layout.addWidget(btn_difficile)
+
+        btn_impossible = QPushButton("💀 IMPOSSIBLE\n(Avion toutes les 1.5s)")
+        btn_impossible.setStyleSheet("padding: 15px; font-size: 14px; background-color: #8B0000; color: white;")
+        btn_impossible.clicked.connect(lambda: self.choisir("impossible"))
+        layout.addWidget(btn_impossible)
+
+        self.setLayout(layout)
+
+    def choisir(self, difficulte):
+        self.difficulte_choisie = difficulte
+        self.accept()  # Ferme la fenêtre et retourne au jeu
+
+
 class MainWindow(BaseClass, Ui_MainWindow):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
+
+        # === DIFFICULTÉ ===
+        self.difficulte = "normal"
+        self.spawn_intervals = {
+            "facile": 8000,
+            "normal": 5000,
+            "difficile": 3000,
+            "impossible": 1500
+        }
 
         # === SCÈNE ===
         self.scene = QGraphicsScene(0, 0, 832, 480)
@@ -50,7 +104,13 @@ class MainWindow(BaseClass, Ui_MainWindow):
 
         self.spawn_timer = QTimer()
         self.spawn_timer.timeout.connect(self.spawn_avion)
-        self.spawn_timer.start(5000)
+        self.spawn_timer.start(self.spawn_intervals[self.difficulte])
+
+        # === TIMER DE NIVEAU ===
+        self.temps_ecoule = 0
+        self.niveau_timer = QTimer()
+        self.niveau_timer.timeout.connect(self.update_niveau)
+        self.niveau_timer.start(1000)
 
         # === PAUSE ===
         self.en_pause = False
@@ -58,12 +118,13 @@ class MainWindow(BaseClass, Ui_MainWindow):
         # focus clavier
         self.setFocusPolicy(Qt.StrongFocus)
 
-        # ✅ sélection souris
+        # === SÉLECTION SOURIS ===
         self.scene.selectionChanged.connect(self.selection_changed)
-        # === RECOMMENCER ===
-        if hasattr(self, "btnRecommencer"):  # ou "recommencer" selon le nom dans ton .ui
+
+        # === CONNEXIONS BOUTONS ===
+        if hasattr(self, "btnRecommencer"):
             self.btnRecommencer.clicked.connect(self.recommencer)
-        # === CONNEXIONS BOUTONS AVIONS ===
+
         if hasattr(self, "monter"):
             self.monter.clicked.connect(self.monter_relay)
         if hasattr(self, "descendre"):
@@ -75,26 +136,20 @@ class MainWindow(BaseClass, Ui_MainWindow):
         if hasattr(self, "atterrir"):
             self.atterrir.clicked.connect(self.atterrir_relay)
 
-        # === PAUSE / REPRENDRE (UN SEUL BOUTON) ===
         if hasattr(self, "pause"):
             self.pause.clicked.connect(self.pause_toggle)
             self.pause.setText("Pause")
 
-        # === QUITTER ===
         if hasattr(self, "btnQuitter"):
             self.btnQuitter.clicked.connect(self.quitter_relay)
-        elif hasattr(self, "quitter"):  # ✅ au cas où il s'appelle "quitter"
+        elif hasattr(self, "quitter"):
             self.quitter.clicked.connect(self.quitter_relay)
-        # === TIMER DE NIVEAU ===
-        self.temps_ecoule = 0  # en secondes
-        self.niveau_timer = QTimer()
-        self.niveau_timer.timeout.connect(self.update_niveau)
-        self.niveau_timer.start(1000)  # toutes les secondes
+
     # -------------------------
     # QUITTER
     # -------------------------
     def quitter_relay(self):
-        self.close()  # ou QApplication.instance().quit()
+        self.close()
 
     # -------------------------
     # SPAWN AVION
@@ -167,7 +222,6 @@ class MainWindow(BaseClass, Ui_MainWindow):
             item.setPos(x, y)
             item.setRotation(avion.cap - 270)
 
-            # ✅ Mise à jour de l’icône si elle change
             if not hasattr(avion, "icone_affichee") or avion.icone_affichee != avion.icone:
                 pix = QPixmap(avion.icone)
                 if pix.isNull():
@@ -175,12 +229,10 @@ class MainWindow(BaseClass, Ui_MainWindow):
                 item.setPixmap(pix.scaled(60, 60))
                 avion.icone_affichee = avion.icone
 
-            # ✅ Marquage pour suppression
             if avion.etat in ["crash", "atterri"]:
                 avions_a_supprimer.append(avion)
                 items_a_supprimer.append(item)
 
-        # ✅ Suppression réelle après la boucle
         for avion, item in zip(avions_a_supprimer, items_a_supprimer):
             self.avions.remove(avion)
             self.plane_items.remove(item)
@@ -189,17 +241,14 @@ class MainWindow(BaseClass, Ui_MainWindow):
             if self.avion_en_cours == avion:
                 self.avion_en_cours = None
 
-        # ✅ Vérification des collisions
         fin_du_jeu = verifier_toutes_les_collisions(self.avions)
         if fin_du_jeu:
             print("FIN DE PARTIE")
             self.timer.stop()
             self.spawn_timer.stop()
+            self.niveau_timer.stop()
 
-        # ✅ Mise à jour des infos sélectionnées
         self.afficher_infos_avion()
-
-    # ✅ MAJ INFOS EN DIRECT
 
     # -------------------------
     # SÉLECTION SOURIS
@@ -221,7 +270,7 @@ class MainWindow(BaseClass, Ui_MainWindow):
             self.afficher_infos_avion()
 
     # -------------------------
-    # AFFICHAGE INFOS AVION ✅
+    # AFFICHAGE INFOS AVION
     # -------------------------
     def afficher_infos_avion(self):
         if not self.avion_en_cours:
@@ -229,7 +278,7 @@ class MainWindow(BaseClass, Ui_MainWindow):
                 self.altitude.setText("—")
                 self.carburant.setText("—")
                 self.vitesse.setText("—")
-            if hasattr(self, "jaugeCarburant"):  # ✅ AJOUTER
+            if hasattr(self, "jaugeCarburant"):
                 self.jaugeCarburant.setValue(0)
             return
 
@@ -240,17 +289,32 @@ class MainWindow(BaseClass, Ui_MainWindow):
             self.carburant.setText(f"{int(a.carburant)} %")
             self.vitesse.setText(f"{int(a.vitesse)} km/h")
 
-        # ✅ MAJ DE LA JAUGE
         if hasattr(self, "jaugeCarburant"):
             self.jaugeCarburant.setValue(int(a.carburant))
 
-            # Changement de couleur selon le niveau
             if a.carburant < 20:
                 self.jaugeCarburant.setStyleSheet("QProgressBar::chunk { background-color: red; }")
             elif a.carburant < 50:
                 self.jaugeCarburant.setStyleSheet("QProgressBar::chunk { background-color: orange; }")
             else:
                 self.jaugeCarburant.setStyleSheet("QProgressBar::chunk { background-color: green; }")
+
+    # -------------------------
+    # DIFFICULTÉ
+    # -------------------------
+    def changer_difficulte(self, niveau):
+        """Change la difficulté du jeu"""
+        self.difficulte = niveau
+        interval = self.spawn_intervals[niveau]
+
+        self.spawn_timer.stop()
+        if not self.en_pause:
+            self.spawn_timer.start(interval)
+
+        print(f"🎮 Difficulté : {niveau.upper()} (spawn toutes les {interval / 1000}s)")
+
+        if hasattr(self, "labelDifficulte"):
+            self.labelDifficulte.setText(f"Difficulté : {niveau.capitalize()}")
 
     # -------------------------
     # RELAYS AVIONS
@@ -283,7 +347,7 @@ class MainWindow(BaseClass, Ui_MainWindow):
             self.en_pause = True
             self.timer.stop()
             self.spawn_timer.stop()
-            self.niveau_timer.stop()  # ✅ AJOUTER
+            self.niveau_timer.stop()
             if hasattr(self, "pause"):
                 self.pause.setText("Reprendre")
             print("JEU EN PAUSE")
@@ -291,17 +355,20 @@ class MainWindow(BaseClass, Ui_MainWindow):
             self.en_pause = False
             self.last_time = time.time()
             self.timer.start(30)
-            self.spawn_timer.start(5000)
-            self.niveau_timer.start(1000)  # ✅ AJOUTER
+            self.spawn_timer.start(self.spawn_intervals[self.difficulte])
+            self.niveau_timer.start(1000)
             if hasattr(self, "pause"):
                 self.pause.setText("Pause")
             print("JEU REPRIS")
 
+    # -------------------------
+    # RECOMMENCER
+    # -------------------------
     def recommencer(self):
         """Remet le jeu à zéro"""
         self.timer.stop()
         self.spawn_timer.stop()
-        self.niveau_timer.stop()  # ✅ AJOUTER
+        self.niveau_timer.stop()
 
         for item in self.plane_items:
             self.scene.removeItem(item)
@@ -312,7 +379,7 @@ class MainWindow(BaseClass, Ui_MainWindow):
         self.afficher_infos_avion()
         self.next_id = 0
 
-        self.temps_ecoule = 0  # ✅ RÉINITIALISER LE TIMER
+        self.temps_ecoule = 0
         if hasattr(self, "timerNiveau"):
             self.timerNiveau.setText("00:00")
 
@@ -322,11 +389,14 @@ class MainWindow(BaseClass, Ui_MainWindow):
 
         self.last_time = time.time()
         self.timer.start(30)
-        self.spawn_timer.start(5000)
-        self.niveau_timer.start(1000)  # ✅ REDÉMARRER
+        self.spawn_timer.start(self.spawn_intervals[self.difficulte])
+        self.niveau_timer.start(1000)
 
         print("🔄 JEU REDÉMARRÉ")
 
+    # -------------------------
+    # UPDATE NIVEAU
+    # -------------------------
     def update_niveau(self):
         """Met à jour le timer de niveau"""
         if self.en_pause:
@@ -334,21 +404,28 @@ class MainWindow(BaseClass, Ui_MainWindow):
 
         self.temps_ecoule += 1
 
-        # Conversion en minutes:secondes
         minutes = self.temps_ecoule // 60
         secondes = self.temps_ecoule % 60
 
-        # Affichage
-        if hasattr(self, "timerNiveau"):  # ou le nom que tu donnes au label
+        if hasattr(self, "timerNiveau"):
             self.timerNiveau.setText(f"{minutes:02d}:{secondes:02d}")
-
 
 
 def main():
     app = QApplication(sys.argv)
-    window = MainWindow()
-    window.show()
-    sys.exit(app.exec())
+
+    # Afficher le menu de démarrage
+    menu = MenuDemarrage()
+    if menu.exec() == QDialog.Accepted:
+        difficulte = menu.difficulte_choisie
+        print(f"🎮 Difficulté choisie : {difficulte}")
+
+        window = MainWindow()
+        window.changer_difficulte(difficulte)
+        window.show()
+        sys.exit(app.exec())
+    else:
+        sys.exit(0)
 
 
 if __name__ == "__main__":

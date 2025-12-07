@@ -25,14 +25,15 @@ CLASSES_AVIONS = {
         "montee": 700,
         "descente": 700,
         "couleur": "orange"
-    }}
+    }
+}
 
 ICONS_AVIONS = {
     "jet": {
-        "vert": "assets/avions/avion_cessna_vert.png",
-        "orange": "assets/avions/avion_cessna_orange.png",
-        "rouge": "assets/avions/avion_cessna_rouge.png",
-        "noir": "assets/avions/avion_cessna_noir.png",
+        "vert": "assets/avions/avion_jet_vert.png",
+        "orange": "assets/avions/avion_jet_orange.png",
+        "rouge": "assets/avions/avion_jet_rouge.png",
+        "noir": "assets/avions/avion_jet_noir.png",
     },
     "ligne": {
         "vert": "assets/avions/avion_ligne_vert.png",
@@ -44,13 +45,15 @@ ICONS_AVIONS = {
         "vert": "assets/avions/avion_cargo_vert.png",
         "orange": "assets/avions/avion_cargo_orange.png",
         "rouge": "assets/avions/avion_cargo_rouge.png",
-        "noir": "assets/avions/avion_cargo_noir.png",}}
-
+        "noir": "assets/avions/avion_cargo_noir.png",
+    }
+}
 
 
 class Avion:
     def __init__(self, altitude, carburant, vitesse, cap, id, position,
-                 altitude_limitesup, altitude_limiteinf, classe="ligne", etat="en vol"):
+                 altitude_limitesup, altitude_limiteinf,
+                 classe="ligne", couleur="vert", etat="en vol"):
 
         self.classe = classe
         self.etat = etat
@@ -60,7 +63,9 @@ class Avion:
         self.vitesse_max = data["vmax"]
         self.delta_montee = data["montee"]
         self.delta_descente = data["descente"]
-        self.couleur = data["couleur"]
+
+        # ✅ COULEUR FIXÉE PAR LE SPAWN (ET NON PAR LA CLASSE)
+        self.couleur = couleur
 
         self.altitude = altitude
         self.carburant = carburant
@@ -71,8 +76,9 @@ class Avion:
         self.altitude_limitesup = altitude_limitesup
         self.altitude_limiteinf = altitude_limiteinf
         self.collisions = 0
-        self.icone = ICONS_AVIONS[self.classe][self.couleur]
 
+        # ✅ ICÔNE CORRECTEMENT ASSOCIÉE
+        self.icone = ICONS_AVIONS[self.classe][self.couleur]
 
     def monter(self):
         self.altitude += self.delta_montee
@@ -96,7 +102,7 @@ class Avion:
 
     def urgence(self):
         self.etat = "en urgence"
-        print(f"{self.id} doit atterir en urgence")
+        print(f"{self.id} doit atterrir en urgence")
 
     def gerer_bordures(self):
         x, y = self.position
@@ -120,27 +126,6 @@ class Avion:
             self.position = (x, y)
             self.gerer_bordures()
 
-    def accelerer(self, delta=10):
-        if self.etat == "en attente":
-            return
-        self.vitesse += delta
-        if self.vitesse > self.vitesse_max:
-            self.vitesse = self.vitesse_max
-
-    def decelerer(self, delta=10):
-        if self.etat == "en attente":
-            return
-        self.vitesse -= delta
-        if self.vitesse < self.vitesse_min:
-            self.vitesse = self.vitesse_min
-
-    def vitesse_kmh(self):
-        return self.vitesse * 3.6
-
-    def changer_cap(self, delta_cap):
-        self.cap = (self.cap + delta_cap) % 360
-        print(f"Cap actuel : {self.cap}°")
-
     def verifier_collision(self, autre_avion, distance_min=50):
         if self is autre_avion:
             return False
@@ -156,8 +141,10 @@ class Avion:
             print(f"COLLISION entre Avion {self.id} et Avion {autre_avion.id}")
             self.collisions += 1
             autre_avion.collisions += 1
+
             self.couleur = "noir"
             autre_avion.couleur = "noir"
+
             self.icone = ICONS_AVIONS[self.classe]["noir"]
             autre_avion.icone = ICONS_AVIONS[autre_avion.classe]["noir"]
 
@@ -166,22 +153,6 @@ class Avion:
             return True
 
         return False
-
-    def infos(self):
-        return {
-            "id": self.id,
-            "position": self.position,
-            "vitesse": self.vitesse,
-            "altitude": self.altitude,
-            "classe": self.classe,
-            "etat": self.etat
-        }
-
-    def est_pose(self):
-        return self.etat == "posé"
-
-    def get_icon_path(self):
-        return f"assets/avions/avion_{self.classe}"
 
 
 def verifier_toutes_les_collisions(liste_avions):

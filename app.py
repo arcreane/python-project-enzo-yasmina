@@ -1,6 +1,6 @@
 import sys
 import time
-
+import random
 from PySide6.QtWidgets import (
     QApplication, QGraphicsScene, QGraphicsRectItem, QGraphicsPixmapItem
 )
@@ -24,98 +24,75 @@ class MainWindow(BaseClass, Ui_MainWindow):
         self.Zonedevol.setScene(self.scene)
 
 
-        runway_width = 200
-        runway_height = 30
-        self.runway = QGraphicsRectItem(0, 0, runway_width, runway_height)
+        self.runway = QGraphicsRectItem(0, 0, 200, 30)
         self.runway.setBrush(QColor("white"))
-
-        x_center = (self.scene.width() - runway_width) / 2
-        y_center = (self.scene.height() - runway_height) / 2
-        self.runway.setPos(x_center, y_center)
-
+        self.runway.setPos(316, 225)
         self.scene.addItem(self.runway)
 
 
-        self.avion = Avion(
+        self.avions = []
+        self.plane_items = []
+
+        self.pixmap = QPixmap("assets/avions/avion_jet_orange.png").scaled(60, 60)
+
+
+        self.last_time = time.time()
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.update_game)
+        self.timer.start(30)
+
+
+        self.spawn_timer = QTimer()
+        self.spawn_timer.timeout.connect(self.spawn_avion)
+        self.spawn_timer.start(5000)  # 1 avion / 1,2 s
+
+
+
+    def spawn_avion(self):
+        if len(self.avions) >= 5:  # ✅ MAX 5 avions
+            return
+
+        avion = Avion(
             altitude=7000,
             carburant=100,
-            vitesse=140,
-            cap=0,
-            id=1,
-            position=(100, 200),
+            vitesse=random.randint(20, 60),
+            cap=random.randint(0, 360),
+            id=len(self.avions),
+            position=(
+                random.randint(50, 780),
+                random.randint(50, 430)
+            ),
             altitude_limitesup=9000,
             altitude_limiteinf=5000,
             classe="jet",
             etat="en vol"
         )
 
-
-        pixmap = QPixmap("assets/avions/avion_jet_orange.png")
-
-        if pixmap.isNull():
-            print("❌ ERREUR : image introuvable")
-        else:
-            pixmap = pixmap.scaled(60, 60)
-
-        self.plane_item = QGraphicsPixmapItem(pixmap)
-        self.scene.addItem(self.plane_item)
-
-
-        self.plane_item.setTransformOriginPoint(
-            self.plane_item.boundingRect().center()
+        item = QGraphicsPixmapItem(self.pixmap)
+        item.setTransformOriginPoint(
+            self.pixmap.width() / 2,
+            self.pixmap.height() / 2
         )
+        item.setPos(*avion.position)
+
+        self.scene.addItem(item)
+
+        self.avions.append(avion)
+        self.plane_items.append(item)
 
 
-        x, y = self.avion.position
-        self.plane_item.setPos(x, y)
-
-
-        self.last_time = time.time()
-
-        self.timer = QTimer()
-        self.timer.timeout.connect(self.update_game)
-        self.timer.start(30)
 
     def update_game(self):
         now = time.time()
         dt = min(now - self.last_time, 0.03)
         self.last_time = now
 
-        self.avion.update_position(dt)
+        for avion, item in zip(self.avions, self.plane_items):
+            avion.update_position(dt)
 
-        x, y = self.avion.position
-
-        w = self.plane_item.pixmap().width()
-        h = self.plane_item.pixmap().height()
-
-        min_x = 0
-        min_y = 0
-        max_x = self.scene.width() - w
-        max_y = self.scene.height() - h
-
-        rebond = False
-
-
-        if x <= min_x or x >= max_x:
-            self.avion.cap = 180 - self.avion.cap
-            rebond = True
-
-
-        if y <= min_y or y >= max_y:
-            self.avion.cap = -self.avion.cap
-            rebond = True
-
-
-        if rebond:
-            self.avion.cap %= 360
-
-
-        x = max(min_x, min(x, max_x))
-        y = max(min_y, min(y, max_y))
-        self.avion.position = (x, y)
-
-        self.plane_item.setPos(x, y)
-        self.plane_item.setRotation(self.avion.cap - 270)
+            x, y = avion.position
+            item.setPos(x, y)
+            item.setRotation(avion.cap - 270)
 
 
 def main():

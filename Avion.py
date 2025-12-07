@@ -107,38 +107,37 @@ class Avion:
     def gerer_bordures(self):
         x, y = self.position
 
-        marge = 5
+        taille = 30  # ✅ moitié de la taille du pixmap (60x60)
 
-
-        if x <= X_MIN + marge:
-            x = X_MIN + marge
+        # Bordure gauche
+        if x < X_MIN + taille:
+            x = X_MIN + taille
             self.cap = 180 - self.cap
 
-
-        elif x >= X_MAX - marge:
-            x = X_MAX - marge
+        # Bordure droite
+        elif x > X_MAX - taille:
+            x = X_MAX - taille
             self.cap = 180 - self.cap
 
-
-        if y <= Y_MIN + marge:
-            y = Y_MIN + marge
+        # Bordure haute
+        if y < Y_MIN + taille:
+            y = Y_MIN + taille
             self.cap = -self.cap
 
-
-        elif y >= Y_MAX - marge:
-            y = Y_MAX - marge
+        # Bordure basse
+        elif y > Y_MAX - taille:
+            y = Y_MAX - taille
             self.cap = -self.cap
 
-
-        self.cap %= 360
-
+        # ✅ Normalisation de l’angle pour éviter les dérives
+        self.cap = self.cap % 360
 
         self.position = (x, y)
 
     def update_position(self, dt):
         if self.etat != "en attente":
 
-            COEFF_VITESSE = 0.2
+            COEFF_VITESSE = 0.15
 
             dx = self.vitesse * COEFF_VITESSE * math.cos(math.radians(self.cap)) * dt
             dy = self.vitesse * COEFF_VITESSE * math.sin(math.radians(self.cap)) * dt

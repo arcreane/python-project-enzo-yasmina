@@ -77,9 +77,9 @@ class Avion:
         self.altitude_limiteinf = altitude_limiteinf
         self.collisions = 0
 
-        # ✅ ICÔNE CORRECTEMENT ASSOCIÉE
+
         if self.couleur not in ICONS_AVIONS[self.classe]:
-            self.couleur = "vert"  # ✅ sécurité
+            self.couleur = "vert"
         self.icone = ICONS_AVIONS[self.classe][self.couleur]
 
     def monter(self):
@@ -109,7 +109,7 @@ class Avion:
     def gerer_bordures(self):
         x, y = self.position
 
-        taille = 30  # ✅ moitié de la taille du pixmap (60x60)
+        taille = 30
 
         # Bordure gauche
         if x < X_MIN + taille:
@@ -131,17 +131,17 @@ class Avion:
             y = Y_MAX - taille
             self.cap = -self.cap
 
-        # ✅ Normalisation de l’angle pour éviter les dérives
+
         self.cap = self.cap % 360
 
         self.position = (x, y)
 
     def update_position(self, dt):
-        # ✅ Un avion crashé NE BOUGE PLUS
+
         if self.etat in ["en attente", "crash"]:
             return
 
-        COEFF_VITESSE = 0.15
+        COEFF_VITESSE = 0.4
 
         dx = self.vitesse * COEFF_VITESSE * math.cos(math.radians(self.cap)) * dt
         dy = self.vitesse * COEFF_VITESSE * math.sin(math.radians(self.cap)) * dt

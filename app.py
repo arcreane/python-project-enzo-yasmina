@@ -51,7 +51,7 @@ class MainWindow(BaseClass, Ui_MainWindow):
             return
 
         classe = random.choice(["jet", "ligne", "cargo"])
-        couleur = random.choice(["vert", "orange", "rouge"])  # ✅ PAS DE NOIR AU SPAWN
+        couleur = random.choice(["vert", "orange", "rouge"])
 
         avion = Avion(
             altitude=random.randint(5500, 8500),
@@ -63,7 +63,7 @@ class MainWindow(BaseClass, Ui_MainWindow):
             altitude_limitesup=9000,
             altitude_limiteinf=5000,
             classe=classe,
-            couleur=couleur,  # ✅ FORÇAGE DE LA COULEUR
+            couleur=couleur,
             etat="en vol"
         )
 
@@ -90,16 +90,16 @@ class MainWindow(BaseClass, Ui_MainWindow):
             item.setPos(x, y)
             item.setRotation(avion.cap - 270)
 
-            # ✅ Mise à jour de l’icône uniquement si elle change
+
             if not hasattr(avion, "icone_affichee") or avion.icone_affichee != avion.icone:
                 pixmap = QPixmap(avion.icone).scaled(60, 60)
                 item.setPixmap(pixmap)
                 avion.icone_affichee = avion.icone
 
-        # ✅ Détection globale des collisions
+
         fin_du_jeu = verifier_toutes_les_collisions(self.avions)
 
-        # ✅ SI 3 COLLISIONS → FIN
+
         if fin_du_jeu:
             print("💀 FIN DE PARTIE 💀")
             self.timer.stop()

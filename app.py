@@ -33,7 +33,8 @@ class MainWindow(BaseClass, Ui_MainWindow):
         self.avions = []
         self.plane_items = []
 
-        self.pixmap = QPixmap("assets/avions/avion_jet_orange.png").scaled(60, 60)
+
+        self.base_pixmap = QPixmap("assets/avions/avion_jet_orange.png").scaled(60, 60)
 
 
         self.last_time = time.time()
@@ -44,12 +45,11 @@ class MainWindow(BaseClass, Ui_MainWindow):
 
         self.spawn_timer = QTimer()
         self.spawn_timer.timeout.connect(self.spawn_avion)
-        self.spawn_timer.start(5000)  # 1 avion / 1,2 s
-
+        self.spawn_timer.start(5000)  # 5 secondes
 
 
     def spawn_avion(self):
-        if len(self.avions) >= 5:  #  MAX 5 avions
+        if len(self.avions) >= 5:
             return
 
         avion = Avion(
@@ -68,11 +68,10 @@ class MainWindow(BaseClass, Ui_MainWindow):
             etat="en vol"
         )
 
-        item = QGraphicsPixmapItem(self.pixmap)
-        item.setTransformOriginPoint(
-            self.pixmap.width() / 2,
-            self.pixmap.height() / 2
-        )
+        pixmap = QPixmap(avion.icone).scaled(60, 60)
+
+        item = QGraphicsPixmapItem(pixmap)
+        item.setTransformOriginPoint(pixmap.width() / 2, pixmap.height() / 2)
         item.setPos(*avion.position)
 
         self.scene.addItem(item)
@@ -80,44 +79,20 @@ class MainWindow(BaseClass, Ui_MainWindow):
         self.avions.append(avion)
         self.plane_items.append(item)
 
+
     def update_game(self):
         now = time.time()
         dt = min(now - self.last_time, 0.05)
         self.last_time = now
 
         for avion, plane_item in zip(self.avions, self.plane_items):
-
             avion.update_position(dt)
-
 
             x, y = avion.position
             plane_item.setPos(x, y)
 
 
             plane_item.setRotation(avion.cap - 270)
-
-
-
-            alt_min = avion.altitude_limiteinf
-            alt_max = avion.altitude_limitesup
-            alt = avion.altitude
-
-            facteur = 0.5 + (alt - alt_min) / (alt_max - alt_min) * 0.8
-            taille_base = 60
-            nouvelle_taille = int(taille_base * facteur)
-
-            pixmap = QPixmap("assets/avions/avion_jet_orange.png").scaled(
-                nouvelle_taille,
-                nouvelle_taille
-            )
-
-            plane_item.setPixmap(pixmap)
-
-
-            plane_item.setTransformOriginPoint(
-                pixmap.width() / 2,
-                pixmap.height() / 2
-            )
 
 
 def main():

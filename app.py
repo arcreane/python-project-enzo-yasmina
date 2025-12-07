@@ -62,20 +62,19 @@ class MainWindow(BaseClass, Ui_MainWindow):
         self.scene.selectionChanged.connect(self.selection_changed)
 
         # === Connexions boutons ===
-        if hasattr(self, "btnMonter"):
-            self.btnMonter.clicked.connect(self.monter_relay)
-        if hasattr(self, "btnDescendre"):
-            self.btnDescendre.clicked.connect(self.descendre_relay)
-        if hasattr(self, "btnAccelerer"):
-            self.btnAccelerer.clicked.connect(self.accelerer_relay)
-        if hasattr(self, "btnDecelerer"):
-            self.btnDecelerer.clicked.connect(self.decelerer_relay)
-        if hasattr(self, "btnAttente"):
-            self.btnAttente.clicked.connect(self.mettre_en_attente_relay)
-        if hasattr(self, "btnReprendre"):
-            self.btnReprendre.clicked.connect(self.reprendre_vol_relay)
-        if hasattr(self, "btnAtterrir"):
-            self.btnAtterrir.clicked.connect(self.atterrir_relay)
+        if hasattr(self, "monter"):
+            self.monter.clicked.connect(self.monter_relay)
+        if hasattr(self, "descendre"):
+            self.descendre.clicked.connect(self.descendre_relay)
+        if hasattr(self, "accelerer"):
+            self.accelerer.clicked.connect(self.accelerer_relay)
+        if hasattr(self, "decelerer"):
+            self.decelerer.clicked.connect(self.decelerer_relay)
+        if hasattr(self, "circuit"):
+            self.circuit.clicked.connect(self.mettre_en_attente_relay)
+
+        if hasattr(self, "atterrir"):
+            self.atterrir.clicked.connect(self.atterrir_relay)
 
     # -------------------------
     # SPAWN AVION
@@ -205,6 +204,9 @@ class MainWindow(BaseClass, Ui_MainWindow):
     def atterrir_relay(self):
         if self.avion_en_cours:
             self.avion_en_cours.atterrir()
+
+
+
 
 
 def main():

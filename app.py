@@ -16,13 +16,11 @@ Ui_MainWindow, BaseClass = loadUiType("mainwindow.ui")
 class MainWindow(BaseClass, Ui_MainWindow):
     def __init__(self):
         super().__init__()
-        self.setupUi(self)
-
+        self.setupUi(self)  # ✅ OBLIGATOIRE AVANT TOUT ACCÈS À Zonedevol
 
         self.scene = QGraphicsScene(0, 0, 832, 480)
         self.scene.setBackgroundBrush(QColor(30, 30, 30))
         self.Zonedevol.setScene(self.scene)
-
 
         self.runway = QGraphicsRectItem(0, 0, 200, 30)
         self.runway.setBrush(QColor("white"))

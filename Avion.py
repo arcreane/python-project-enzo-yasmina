@@ -1,9 +1,16 @@
 import math
 import time
-from Bordures import X_MIN, X_MAX, Y_MIN, Y_MAX
+
+# ✅ Limites DIRECTES de la scène (plus de Bordures.py)
+X_MIN = 0
+X_MAX = 832
+Y_MIN = 0
+Y_MAX = 480
 
 MAX_COLLISIONS = 3
 collisions_globales = 0
+
+avion_en_approche = None  # ✅ UN SEUL AVION AUTORISÉ À ATTERRIR
 
 CLASSES_AVIONS = {
     "jet": {"vmin": 180, "vmax": 300, "montee": 1200, "descente": 1200},
@@ -65,6 +72,8 @@ class Avion:
         self.temps_panne = None
         self.vitesse_secours = self.vitesse * 0.4
 
+        self.point_piste = (416, 240)
+
     # -------------------------
     # COMMANDES
     # -------------------------
@@ -81,34 +90,72 @@ class Avion:
         self.vitesse = max(self.vitesse - 50, self.vitesse_min)
 
     def atterrir(self):
-        self.etat = "atterri"
-        self.vitesse = 0
-        print(f"🛬 Avion {self.id} est sur le point d'atterrir")
+        global avion_en_approche
+
+        if self.etat == "en vol" and avion_en_approche is None:
+            self.etat = "atterrissage"
+            avion_en_approche = self
+            print(f"🛬 Avion {self.id} autorisé à atterrir")
 
     # -------------------------
-    # BORDURES
+    # BORDURES ✅ CORRIGÉES
     # -------------------------
     def gerer_bordures(self):
         x, y = self.position
         taille = 30
 
-        if x < X_MIN + taille or x > X_MAX - taille:
+        if x < X_MIN + taille:
+            x = X_MIN + taille
             self.cap = 180 - self.cap
 
-        if y < Y_MIN + taille or y > Y_MAX - taille:
+        elif x > X_MAX - taille:
+            x = X_MAX - taille
+            self.cap = 180 - self.cap
+
+        if y < Y_MIN + taille:
+            y = Y_MIN + taille
+            self.cap = -self.cap
+
+        elif y > Y_MAX - taille:
+            y = Y_MAX - taille
             self.cap = -self.cap
 
         self.cap %= 360
         self.position = (x, y)
 
     # -------------------------
-    # MOUVEMENT PRINCIPAL
+    # MOUVEMENT
     # -------------------------
     def update_position(self, dt):
+        global avion_en_approche
 
         if self.etat in ["crash", "atterri"]:
             return
 
+        # ✅ PHASE ATTERRISSAGE
+        if self.etat == "atterrissage":
+            xp, yp = self.point_piste
+            x, y = self.position
+
+            self.cap = math.degrees(math.atan2(yp - y, xp - x))
+            self.vitesse = max(30, self.vitesse - 80 * dt)
+            self.altitude = max(0, self.altitude - 700 * dt)
+
+            dx = self.vitesse * 0.15 * math.cos(math.radians(self.cap)) * dt
+            dy = self.vitesse * 0.15 * math.sin(math.radians(self.cap)) * dt
+
+            self.position = (x + dx, y + dy)
+
+            if math.hypot(xp - x, yp - y) < 15 and self.altitude <= 3:
+                self.etat = "atterri"
+                self.vitesse = 0
+                self.altitude = 0
+                avion_en_approche = None
+                print(f"✅ Avion {self.id} a atterri")
+
+            return
+
+        # ✅ CONSOMMATION
         self.carburant -= dt * 0.8
 
         if self.carburant <= 15 and not self.en_panne:
@@ -116,17 +163,15 @@ class Avion:
 
         if self.en_panne:
             self.vitesse = self.vitesse_secours
-
             if time.time() - self.temps_panne > 10:
+                self.etat = "crash"
                 self.couleur = "noir"
                 self.icone = ICONS_AVIONS[self.classe]["noir"]
-                self.etat = "crash"
-                print(f"Avion {self.id} détruit")
+                print(f"💥 Avion {self.id} détruit")
                 return
 
-        COEFF_VITESSE = 0.15
-        dx = self.vitesse * COEFF_VITESSE * math.cos(math.radians(self.cap)) * dt
-        dy = self.vitesse * COEFF_VITESSE * math.sin(math.radians(self.cap)) * dt
+        dx = self.vitesse * 0.15 * math.cos(math.radians(self.cap)) * dt
+        dy = self.vitesse * 0.15 * math.sin(math.radians(self.cap)) * dt
 
         x, y = self.position
         self.position = (x + dx, y + dy)
@@ -141,41 +186,27 @@ class Avion:
         self.temps_panne = time.time()
         self.couleur = "rouge"
         self.icone = ICONS_AVIONS[self.classe]["rouge"]
-        print(f"PANNE MOTEUR Avion {self.id}")
 
     # -------------------------
     # COLLISION
     # -------------------------
-    def verifier_collision(self, autre, distance_min=50, seuil_altitude=300):
+    def verifier_collision(self, autre):
 
-        if self is autre:
+        if self.etat in ["crash", "atterri", "atterrissage"]:
+            return False
+        if autre.etat in ["crash", "atterri", "atterrissage"]:
             return False
 
-        if self.etat == "crash" or autre.etat == "crash":
+        if abs(self.altitude - autre.altitude) > 300:
             return False
 
-        # ✅ Différence d'altitude
-        diff_altitude = abs(self.altitude - autre.altitude)
-
-        if diff_altitude > seuil_altitude:
-            return False
-
-        # ✅ Distance horizontale
         x1, y1 = self.position
         x2, y2 = autre.position
 
-        if math.hypot(x2 - x1, y2 - y1) < distance_min:
+        if math.hypot(x2 - x1, y2 - y1) < 50:
+            self.etat = autre.etat = "crash"
+            self.couleur = autre.couleur = "noir"
             print(f"💥 COLLISION {self.id} <-> {autre.id}")
-
-            self.etat = "crash"
-            autre.etat = "crash"
-
-            self.couleur = "noir"
-            autre.couleur = "noir"
-
-            self.icone = ICONS_AVIONS[self.classe]["noir"]
-            autre.icone = ICONS_AVIONS[autre.classe]["noir"]
-
             return True
 
         return False
@@ -191,10 +222,7 @@ def verifier_toutes_les_collisions(liste_avions):
         for j in range(i + 1, len(liste_avions)):
             if liste_avions[i].verifier_collision(liste_avions[j]):
                 collisions_globales += 1
-                print(f"COLLISIONS : {collisions_globales}/{MAX_COLLISIONS}")
-
                 if collisions_globales >= MAX_COLLISIONS:
-                    print("FIN DE PARTIE")
                     return True
 
     return False

@@ -80,19 +80,44 @@ class MainWindow(BaseClass, Ui_MainWindow):
         self.avions.append(avion)
         self.plane_items.append(item)
 
-
-
     def update_game(self):
         now = time.time()
-        dt = min(now - self.last_time, 0.03)
+        dt = min(now - self.last_time, 0.05)
         self.last_time = now
 
-        for avion, item in zip(self.avions, self.plane_items):
+        for avion, plane_item in zip(self.avions, self.plane_items):
+
             avion.update_position(dt)
 
+
             x, y = avion.position
-            item.setPos(x, y)
-            item.setRotation(avion.cap - 270)
+            plane_item.setPos(x, y)
+
+
+            plane_item.setRotation(avion.cap - 270)
+
+
+
+            alt_min = avion.altitude_limiteinf
+            alt_max = avion.altitude_limitesup
+            alt = avion.altitude
+
+            facteur = 0.5 + (alt - alt_min) / (alt_max - alt_min) * 0.8
+            taille_base = 60
+            nouvelle_taille = int(taille_base * facteur)
+
+            pixmap = QPixmap("assets/avions/avion_jet_orange.png").scaled(
+                nouvelle_taille,
+                nouvelle_taille
+            )
+
+            plane_item.setPixmap(pixmap)
+
+
+            plane_item.setTransformOriginPoint(
+                pixmap.width() / 2,
+                pixmap.height() / 2
+            )
 
 
 def main():

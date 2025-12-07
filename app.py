@@ -1,5 +1,6 @@
 import sys
 import time
+
 from PySide6.QtWidgets import (
     QApplication, QGraphicsScene, QGraphicsRectItem, QGraphicsPixmapItem
 )
@@ -17,12 +18,16 @@ class MainWindow(BaseClass, Ui_MainWindow):
         super().__init__()
         self.setupUi(self)
 
-
+        # =========================
+        # SCÈNE
+        # =========================
         self.scene = QGraphicsScene(0, 0, 832, 480)
         self.scene.setBackgroundBrush(QColor(30, 30, 30))
         self.Zonedevol.setScene(self.scene)
 
-
+        # =========================
+        # PISTE
+        # =========================
         runway_width = 200
         runway_height = 30
         self.runway = QGraphicsRectItem(0, 0, runway_width, runway_height)
@@ -34,12 +39,14 @@ class MainWindow(BaseClass, Ui_MainWindow):
 
         self.scene.addItem(self.runway)
 
-
+        # =========================
+        # AVION LOGIQUE
+        # =========================
         self.avion = Avion(
             altitude=7000,
             carburant=100,
-            vitesse=50,
-            cap=0,  # vers la droite
+            vitesse=40,   # ✅ vitesse RÉDUITE
+            cap=0,        # vers la droite
             id=1,
             position=(100, 200),
             altitude_limitesup=9000,
@@ -48,12 +55,31 @@ class MainWindow(BaseClass, Ui_MainWindow):
             etat="en vol"
         )
 
+        # =========================
+        # AVION GRAPHIQUE (PNG)
+        # =========================
+        pixmap = QPixmap("assets/avions/avion_jet_orange.png")
 
-        pixmap = QPixmap("assets/avions/avion_jet_orange.png").scaled(60, 60)
+        if pixmap.isNull():
+            print("❌ ERREUR : image introuvable")
+        else:
+            pixmap = pixmap.scaled(60, 60)
+
         self.plane_item = QGraphicsPixmapItem(pixmap)
         self.scene.addItem(self.plane_item)
 
+        # ✅ CENTRAGE DU POINT DE ROTATION SUR L’ITEM
+        self.plane_item.setTransformOriginPoint(
+            self.plane_item.boundingRect().center()
+        )
 
+        # ✅ POSITION INITIALE SYNC AVEC L’AVION
+        x, y = self.avion.position
+        self.plane_item.setPos(x, y)
+
+        # =========================
+        # TIMER DE JEU
+        # =========================
         self.last_time = time.time()
 
         self.timer = QTimer()
@@ -66,12 +92,15 @@ class MainWindow(BaseClass, Ui_MainWindow):
         dt = now - self.last_time
         self.last_time = now
 
-
+        # ✅ MISE À JOUR LOGIQUE
         self.avion.update_position(dt)
 
-
+        # ✅ MISE À JOUR GRAPHIQUE
         x, y = self.avion.position
         self.plane_item.setPos(x, y)
+
+        # ✅ SYNCHRO ROTATION AVEC LE CAP
+        self.plane_item.setRotation(self.avion.cap)
 
 
 def main():

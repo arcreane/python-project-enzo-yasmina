@@ -12,7 +12,7 @@ zones_conflit = [
 ]
 
 altitudes_conflit = [6000, 7000, 8000]
-vitesses = [140, 180, 240, 300]
+vitesses = [20,30,40,50]
 
 classes_possibles = ["jet", "ligne", "cargo"]
 couleurs_possibles = ["rouge", "vert", "orange", "noir"]  # ✅ AJOUT IMPORTANT
@@ -68,5 +68,8 @@ def generer_avion_collision():
         couleur=couleur,
         etat="en vol"
     )
-
     return avion
+
+
+
+

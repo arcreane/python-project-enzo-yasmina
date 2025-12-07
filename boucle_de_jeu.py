@@ -2,7 +2,7 @@ import time
 from avion_spawn_random import generer_avion_collision
 from Avion import verifier_toutes_les_collisions
 
-NB_AVIONS = 5
+NB_AVIONS = 3
 TICK = 0.03
 DUREE_JEU = 30 #secondes
 

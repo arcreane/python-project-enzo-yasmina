@@ -116,14 +116,17 @@ class Avion:
         self.cap %= 360
 
     def update_position(self, dt):
-        if self.etat != "en attente":
-            dx = self.vitesse * math.cos(math.radians(self.cap)) * dt
-            dy = self.vitesse * math.sin(math.radians(self.cap)) * dt
+        if self.etat != "en attente" and self.vitesse > 0:
+            SPEED_SCALE = 0.2  # <-- ralentisseur global
+
+            dx = self.vitesse * SPEED_SCALE * math.cos(math.radians(self.cap)) * dt
+            dy = self.vitesse * SPEED_SCALE * math.sin(math.radians(self.cap)) * dt
 
             x, y = self.position
             x += dx
             y += dy
             self.position = (x, y)
+
             self.gerer_bordures()
 
     def verifier_collision(self, autre_avion, distance_min=50):

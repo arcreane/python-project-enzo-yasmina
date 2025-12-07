@@ -32,22 +32,22 @@ class MenuDemarrage(QDialog):
 
         # Boutons de difficulté
         btn_facile = QPushButton("😊 Facile\n(Avion toutes les 8s)")
-        btn_facile.setStyleSheet("padding: 15px; font-size: 14px;")
+        btn_facile.setStyleSheet("padding: 12px; font-size: 14px;")
         btn_facile.clicked.connect(lambda: self.choisir("facile"))
         layout.addWidget(btn_facile)
 
         btn_normal = QPushButton("✈️ Normal\n(Avion toutes les 5s)")
-        btn_normal.setStyleSheet("padding: 15px; font-size: 14px;")
+        btn_normal.setStyleSheet("padding: 12px; font-size: 14px;")
         btn_normal.clicked.connect(lambda: self.choisir("normal"))
         layout.addWidget(btn_normal)
 
         btn_difficile = QPushButton("🔥 Difficile\n(Avion toutes les 3s)")
-        btn_difficile.setStyleSheet("padding: 15px; font-size: 14px;")
+        btn_difficile.setStyleSheet("padding: 12px; font-size: 14px;")
         btn_difficile.clicked.connect(lambda: self.choisir("difficile"))
         layout.addWidget(btn_difficile)
 
         btn_impossible = QPushButton("💀 IMPOSSIBLE\n(Avion toutes les 1.5s)")
-        btn_impossible.setStyleSheet("padding: 15px; font-size: 14px; background-color: #8B0000; color: white;")
+        btn_impossible.setStyleSheet("padding: 12px; font-size: 14px; background-color: #8B0000; color: white;")
         btn_impossible.clicked.connect(lambda: self.choisir("impossible"))
         layout.addWidget(btn_impossible)
 
@@ -55,7 +55,59 @@ class MenuDemarrage(QDialog):
 
     def choisir(self, difficulte):
         self.difficulte_choisie = difficulte
-        self.accept()  # Ferme la fenêtre et retourne au jeu
+        self.accept()
+
+
+class FenetreFinJeu(QDialog):
+    def __init__(self, victoire=True, temps=0, poses=0, crashes=0):
+        super().__init__()
+        self.setWindowTitle("Fin de partie")
+        self.setFixedSize(400, 300)
+
+        layout = QVBoxLayout()
+
+        if victoire:
+            # VICTOIRE
+            titre = QLabel("🎉 VICTOIRE ! 🎉")
+            titre.setStyleSheet("font-size: 24px; font-weight: bold; color: green; margin: 20px;")
+            titre.setAlignment(Qt.AlignCenter)
+            layout.addWidget(titre)
+
+            minutes = temps // 60
+            secondes = temps % 60
+
+            stats = QLabel(f"Temps : {minutes:02d}:{secondes:02d}\n\n"
+                           f"✅ Avions posés : {poses}\n"
+                           f"💥 Avions crashés : {crashes}")
+            stats.setStyleSheet("font-size: 16px; margin: 20px;")
+            stats.setAlignment(Qt.AlignCenter)
+            layout.addWidget(stats)
+        else:
+            # DÉFAITE
+            titre = QLabel("💥 GAME OVER 💥")
+            titre.setStyleSheet("font-size: 24px; font-weight: bold; color: red; margin: 20px;")
+            titre.setAlignment(Qt.AlignCenter)
+            layout.addWidget(titre)
+
+            message = QLabel(f"3 crashs, vous avez perdu !\n\n"
+                             f"Avions posés : {poses}\n"
+                             f"Avions crashés : {crashes}")
+            message.setStyleSheet("font-size: 16px; margin: 20px;")
+            message.setAlignment(Qt.AlignCenter)
+            layout.addWidget(message)
+
+        # Boutons
+        btn_recommencer = QPushButton("🔄 Recommencer")
+        btn_recommencer.setStyleSheet("padding: 12px; font-size: 14px;")
+        btn_recommencer.clicked.connect(lambda: self.done(1))  # Code 1 = recommencer
+        layout.addWidget(btn_recommencer)
+
+        btn_quitter = QPushButton("❌ Quitter")
+        btn_quitter.setStyleSheet("padding: 12px; font-size: 14px;")
+        btn_quitter.clicked.connect(lambda: self.done(0))  # Code 0 = quitter
+        layout.addWidget(btn_quitter)
+
+        self.setLayout(layout)
 
 
 class MainWindow(BaseClass, Ui_MainWindow):
@@ -88,6 +140,10 @@ class MainWindow(BaseClass, Ui_MainWindow):
         self.plane_items = []
         self.avion_en_cours = None
 
+        # === COMPTEURS ===
+        self.avions_poses = 0
+        self.avions_crashes = 0
+
         # id auto
         self.next_id = 0
         self.max_avions = 10
@@ -108,6 +164,7 @@ class MainWindow(BaseClass, Ui_MainWindow):
 
         # === TIMER DE NIVEAU ===
         self.temps_ecoule = 0
+        self.duree_jeu = 180  # 3 minutes (180 secondes)
         self.niveau_timer = QTimer()
         self.niveau_timer.timeout.connect(self.update_niveau)
         self.niveau_timer.start(1000)
@@ -144,6 +201,9 @@ class MainWindow(BaseClass, Ui_MainWindow):
             self.btnQuitter.clicked.connect(self.quitter_relay)
         elif hasattr(self, "quitter"):
             self.quitter.clicked.connect(self.quitter_relay)
+
+        # Afficher les stats initiales
+        self.afficher_stats()
 
     # -------------------------
     # QUITTER
@@ -233,7 +293,21 @@ class MainWindow(BaseClass, Ui_MainWindow):
                 avions_a_supprimer.append(avion)
                 items_a_supprimer.append(item)
 
+        # Suppression et comptage
         for avion, item in zip(avions_a_supprimer, items_a_supprimer):
+            # Compter avant de supprimer
+            if avion.etat == "atterri":
+                self.avions_poses += 1
+                print(f"✅ Avion {avion.id} atterri ! Total : {self.avions_poses}")
+            elif avion.etat == "crash":
+                self.avions_crashes += 1
+                print(f"💥 Avion {avion.id} crashé ! Total : {self.avions_crashes}")
+
+                # Vérifier si 3 crashs = défaite
+                if self.avions_crashes >= 6:
+                    self.fin_jeu(victoire=False)
+                    return
+
             self.avions.remove(avion)
             self.plane_items.remove(item)
             self.scene.removeItem(item)
@@ -243,12 +317,14 @@ class MainWindow(BaseClass, Ui_MainWindow):
 
         fin_du_jeu = verifier_toutes_les_collisions(self.avions)
         if fin_du_jeu:
-            print("FIN DE PARTIE")
-            self.timer.stop()
-            self.spawn_timer.stop()
-            self.niveau_timer.stop()
+            print("FIN DE PARTIE - COLLISION")
+            self.avions_crashes += 1
+            if self.avions_crashes >= 3:
+                self.fin_jeu(victoire=False)
+                return
 
         self.afficher_infos_avion()
+        self.afficher_stats()
 
     # -------------------------
     # SÉLECTION SOURIS
@@ -298,6 +374,45 @@ class MainWindow(BaseClass, Ui_MainWindow):
                 self.jaugeCarburant.setStyleSheet("QProgressBar::chunk { background-color: orange; }")
             else:
                 self.jaugeCarburant.setStyleSheet("QProgressBar::chunk { background-color: green; }")
+
+    # -------------------------
+    # AFFICHAGE STATS
+    # -------------------------
+    def afficher_stats(self):
+        """Affiche les statistiques de jeu"""
+        if hasattr(self, "labelPoses"):
+            self.labelPoses.setText(f"{self.avions_poses}")
+        if hasattr(self, "labelCrashes"):
+            self.labelCrashes.setText(f"{self.avions_crashes}")
+
+    # -------------------------
+    # FIN DE JEU
+    # -------------------------
+    def fin_jeu(self, victoire=True):
+        """Affiche la fenêtre de fin de jeu"""
+        # Arrêter tous les timers
+        self.timer.stop()
+        self.spawn_timer.stop()
+        self.niveau_timer.stop()
+
+        # Afficher la fenêtre de fin
+        fenetre = FenetreFinJeu(
+            victoire=victoire,
+            temps=self.temps_ecoule,
+            poses=self.avions_poses,
+            crashes=self.avions_crashes
+        )
+
+        resultat = fenetre.exec()
+
+        if resultat == 1:  # Recommencer
+            self.recommencer()
+            # Redemander la difficulté
+            menu = MenuDemarrage()
+            if menu.exec() == QDialog.Accepted:
+                self.changer_difficulte(menu.difficulte_choisie)
+        else:  # Quitter
+            self.close()
 
     # -------------------------
     # DIFFICULTÉ
@@ -379,6 +494,11 @@ class MainWindow(BaseClass, Ui_MainWindow):
         self.afficher_infos_avion()
         self.next_id = 0
 
+        # Réinitialiser les compteurs
+        self.avions_poses = 0
+        self.avions_crashes = 0
+        self.afficher_stats()
+
         self.temps_ecoule = 0
         if hasattr(self, "timerNiveau"):
             self.timerNiveau.setText("00:00")
@@ -409,6 +529,10 @@ class MainWindow(BaseClass, Ui_MainWindow):
 
         if hasattr(self, "timerNiveau"):
             self.timerNiveau.setText(f"{minutes:02d}:{secondes:02d}")
+
+        # Vérifier si victoire (temps écoulé)
+        if self.temps_ecoule >= self.duree_jeu:
+            self.fin_jeu(victoire=True)
 
 
 def main():

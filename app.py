@@ -1,10 +1,10 @@
 import sys
 from PySide6.QtWidgets import (
-    QApplication, QMainWindow, QGraphicsScene, QGraphicsRectItem
+    QApplication, QMainWindow, QGraphicsScene, QGraphicsRectItem, QGraphicsPixmapItem
 )
 from PySide6.QtGui import QColor,QPixmap
 from PySide6.QtUiTools import loadUiType
-avion_image=QGraphicsPixmapItem(QPixmap("avion.png"))
+
 
 Ui_MainWindow, BaseClass = loadUiType("mainwindow.ui")
 
@@ -35,16 +35,9 @@ class MainWindow(BaseClass, Ui_MainWindow):
         # Ajout dans la scène
         self.scene.addItem(self.runway)
 
-        self.plane = QGraphicsRectItem(0,0,10,10)
-        self.plane.setPos(100, 100)
+        self.plane = QGraphicsPixmapItem(QPixmap("avion_jet_orange.png"))
+        self.plane.setPos(100, 100)  # position initiale
         self.scene.addItem(self.plane)
-        self.plane.setBrush(QColor("green"))
-
-
-
-
-
-
 
 
 def main():

@@ -195,9 +195,6 @@ class MainWindow(BaseClass, Ui_MainWindow):
         if a:
             a.atterrir()
 
-
-
-
 def main():
     app = QApplication(sys.argv)
     window = MainWindow()

@@ -39,8 +39,8 @@ class MainWindow(BaseClass, Ui_MainWindow):
         self.avion = Avion(
             altitude=7000,
             carburant=100,
-            vitesse=40,   # ✅ vitesse RÉDUITE
-            cap=0,        # vers la droite
+            vitesse=140,
+            cap=0,
             id=1,
             position=(100, 200),
             altitude_limitesup=9000,
@@ -78,18 +78,44 @@ class MainWindow(BaseClass, Ui_MainWindow):
 
     def update_game(self):
         now = time.time()
-
-        dt = min(now - self.last_time, 0.05)
-
+        dt = min(now - self.last_time, 0.03)
         self.last_time = now
 
         self.avion.update_position(dt)
 
         x, y = self.avion.position
+
+        w = self.plane_item.pixmap().width()
+        h = self.plane_item.pixmap().height()
+
+        min_x = 0
+        min_y = 0
+        max_x = self.scene.width() - w
+        max_y = self.scene.height() - h
+
+        rebond = False
+
+
+        if x <= min_x or x >= max_x:
+            self.avion.cap = 180 - self.avion.cap
+            rebond = True
+
+
+        if y <= min_y or y >= max_y:
+            self.avion.cap = -self.avion.cap
+            rebond = True
+
+
+        if rebond:
+            self.avion.cap %= 360
+
+
+        x = max(min_x, min(x, max_x))
+        y = max(min_y, min(y, max_y))
+        self.avion.position = (x, y)
+
         self.plane_item.setPos(x, y)
-
-
-        self.plane_item.setRotation(self.avion.cap-270)
+        self.plane_item.setRotation(self.avion.cap - 270)
 
 
 def main():

@@ -12,10 +12,10 @@ zones_conflit = [
 ]
 
 altitudes_conflit = [6000, 7000, 8000]
-vitesses = [20,30,40,50]
+vitesses = [140, 160, 180, 200]
 
 classes_possibles = ["jet", "ligne", "cargo"]
-couleurs_possibles = ["rouge", "vert", "orange", "noir"]  # ✅ AJOUT IMPORTANT
+couleurs_possibles = ["rouge", "vert", "orange", "noir"]
 
 
 def normal(vx, vy):

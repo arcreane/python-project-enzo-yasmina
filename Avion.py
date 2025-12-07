@@ -64,7 +64,7 @@ class Avion:
         self.delta_montee = data["montee"]
         self.delta_descente = data["descente"]
 
-        # ✅ COULEUR FIXÉE PAR LE SPAWN (ET NON PAR LA CLASSE)
+
         self.couleur = couleur
 
         self.altitude = altitude
@@ -107,18 +107,38 @@ class Avion:
     def gerer_bordures(self):
         x, y = self.position
 
-        if x <= X_MIN + 10 or x >= X_MAX - 10:
-            self.cap = 100 - self.cap
+        marge = 5
 
-        if y <= Y_MIN + 10 or y >= Y_MAX - 10:
+
+        if x <= X_MIN + marge:
+            x = X_MIN + marge
+            self.cap = 180 - self.cap
+
+
+        elif x >= X_MAX - marge:
+            x = X_MAX - marge
+            self.cap = 180 - self.cap
+
+
+        if y <= Y_MIN + marge:
+            y = Y_MIN + marge
             self.cap = -self.cap
+
+
+        elif y >= Y_MAX - marge:
+            y = Y_MAX - marge
+            self.cap = -self.cap
+
 
         self.cap %= 360
 
+
+        self.position = (x, y)
+
     def update_position(self, dt):
         if self.etat != "en attente":
-            # ✅ COEFFICIENT DE RÉDUCTION (TRÈS IMPORTANT)
-            COEFF_VITESSE = 0.1  # ← tu peux même mettre 0.05 si tu veux encore plus lent
+
+            COEFF_VITESSE = 0.2
 
             dx = self.vitesse * COEFF_VITESSE * math.cos(math.radians(self.cap)) * dt
             dy = self.vitesse * COEFF_VITESSE * math.sin(math.radians(self.cap)) * dt

@@ -10,7 +10,6 @@ from PySide6.QtCore import QTimer, Qt
 
 from Avion import Avion, verifier_toutes_les_collisions
 
-
 Ui_MainWindow, BaseClass = loadUiType("mainwindow.ui")
 
 
@@ -19,7 +18,7 @@ class MainWindow(BaseClass, Ui_MainWindow):
         super().__init__()
         self.setupUi(self)
 
-        # === scène ===
+        # === SCÈNE ===
         self.scene = QGraphicsScene(0, 0, 832, 480)
         self.scene.setBackgroundBrush(QColor(30, 30, 30))
         self.Zonedevol.setScene(self.scene)
@@ -37,14 +36,12 @@ class MainWindow(BaseClass, Ui_MainWindow):
 
         # id auto
         self.next_id = 0
-
-        # limite max avions
         self.max_avions = 10
 
         # pixmap de base
         self.base_pixmap = QPixmap("assets/avions/avion_jet_orange.png").scaled(60, 60)
 
-        # timers
+        # === TIMERS ===
         self.last_time = time.time()
 
         self.timer = QTimer()
@@ -55,6 +52,7 @@ class MainWindow(BaseClass, Ui_MainWindow):
         self.spawn_timer.timeout.connect(self.spawn_avion)
         self.spawn_timer.start(5000)
 
+        # === PAUSE ===
         self.en_pause = False
 
         # focus clavier
@@ -63,7 +61,7 @@ class MainWindow(BaseClass, Ui_MainWindow):
         # ✅ sélection souris
         self.scene.selectionChanged.connect(self.selection_changed)
 
-        # === Connexions boutons ===
+        # === CONNEXIONS BOUTONS ===
         if hasattr(self, "monter"):
             self.monter.clicked.connect(self.monter_relay)
         if hasattr(self, "descendre"):
@@ -71,27 +69,35 @@ class MainWindow(BaseClass, Ui_MainWindow):
         if hasattr(self, "accelerer"):
             self.accelerer.clicked.connect(self.accelerer_relay)
         if hasattr(self, "decelerer"):
-            self.decelerer.clicked.connect(self.decelerer_relay)
+            self.decelerer.clicked.connect(self.deceler_relay)
         if hasattr(self, "circuit"):
             self.circuit.clicked.connect(self.mettre_en_attente_relay)
         if hasattr(self, "atterrir"):
             self.atterrir.clicked.connect(self.atterrir_relay)
 
+        # === PAUSE / REPRENDRE ===
         if hasattr(self, "pause"):
             self.pause.clicked.connect(self.pause_relay)
 
         if hasattr(self, "reprendre"):
             self.reprendre.clicked.connect(self.reprendre_jeu_relay)
+            self.reprendre.setEnabled(False)  # ✅ bloqué au départ
 
-        # ✅ BOUTON QUITTER
+        # === QUITTER ===
         if hasattr(self, "btnQuitter"):
             self.btnQuitter.clicked.connect(self.quitter_relay)
+
+    # -------------------------
+    # QUITTER
+    # -------------------------
+    def quitter_relay(self):
+        QApplication.quit()
 
     # -------------------------
     # SPAWN AVION
     # -------------------------
     def spawn_avion(self):
-        if len(self.avions) >= self.max_avions:
+        if len(self.avions) >= self.max_avions or self.en_pause:
             return
 
         classe = random.choice(["jet", "ligne", "cargo"])
@@ -130,12 +136,10 @@ class MainWindow(BaseClass, Ui_MainWindow):
         item.setTransformOriginPoint(30, 30)
         item.setPos(*avion.position)
 
-        # ✅ sélection souris activée
         item.setFlag(QGraphicsPixmapItem.ItemIsSelectable, True)
         item.setFlag(QGraphicsPixmapItem.ItemIsFocusable, True)
 
         self.scene.addItem(item)
-
         self.avions.append(avion)
         self.plane_items.append(item)
 
@@ -171,7 +175,7 @@ class MainWindow(BaseClass, Ui_MainWindow):
             self.spawn_timer.stop()
 
     # -------------------------
-    # ✅ SÉLECTION SOURIS
+    # SÉLECTION SOURIS
     # -------------------------
     def selection_changed(self):
         items = self.scene.selectedItems()
@@ -189,7 +193,7 @@ class MainWindow(BaseClass, Ui_MainWindow):
             print(f"✈ Avion {self.avion_en_cours.id} sélectionné")
 
     # -------------------------
-    # RELAYS BOUTONS
+    # RELAYS AVIONS
     # -------------------------
     def monter_relay(self):
         if self.avion_en_cours:
@@ -203,7 +207,7 @@ class MainWindow(BaseClass, Ui_MainWindow):
         if self.avion_en_cours:
             self.avion_en_cours.accelerer()
 
-    def decelerer_relay(self):
+    def deceler_relay(self):
         if self.avion_en_cours:
             self.avion_en_cours.decelerer()
 
@@ -211,37 +215,36 @@ class MainWindow(BaseClass, Ui_MainWindow):
         if self.avion_en_cours:
             self.avion_en_cours.mettre_en_attente()
 
-    def reprendre_vol_relay(self):
-        if self.avion_en_cours:
-            self.avion_en_cours.reprendre_vol()
-
     def atterrir_relay(self):
         if self.avion_en_cours:
             self.avion_en_cours.atterrir()
 
     # -------------------------
-    # PAUSE / REPRISE
+    # PAUSE / REPRENDRE
     # -------------------------
     def pause_relay(self):
         if not self.en_pause:
             self.en_pause = True
             self.timer.stop()
             self.spawn_timer.stop()
+
+            if hasattr(self, "reprendre"):
+                self.reprendre.setEnabled(True)
+
             print("JEU EN PAUSE")
 
     def reprendre_jeu_relay(self):
         if self.en_pause:
             self.en_pause = False
             self.last_time = time.time()
+
             self.timer.start(30)
             self.spawn_timer.start(5000)
-            print("JEU REPRIS")
 
-    # -------------------------
-    # ✅ QUITTER
-    # -------------------------
-    def quitter_relay(self):
-        QApplication.quit()
+            if hasattr(self, "reprendre"):
+                self.reprendre.setEnabled(False)
+
+            print("JEU REPRIS")
 
 
 def main():

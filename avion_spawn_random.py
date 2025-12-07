@@ -53,7 +53,7 @@ def generer_avion_collision():
     altitude = random.choice(altitudes_conflit)
 
     classe = random.choice(classes_possibles)
-    couleur = random.choice(couleurs_possibles)  # ✅ COULEUR AJOUTÉE
+    couleur = random.choice(couleurs_possibles)
 
     avion = Avion(
         altitude=altitude,
@@ -65,7 +65,7 @@ def generer_avion_collision():
         altitude_limitesup=9000,
         altitude_limiteinf=5000,
         classe=classe,
-        couleur=couleur,   # ✅ TRANSMISE À AVION
+        couleur=couleur,
         etat="en vol"
     )
 

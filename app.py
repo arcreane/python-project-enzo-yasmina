@@ -43,11 +43,6 @@ class MainWindow(BaseClass, Ui_MainWindow):
 
 
 
-
-
-
-
-
 def main():
     app = QApplication(sys.argv)
     window = MainWindow()

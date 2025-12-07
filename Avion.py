@@ -1,31 +1,14 @@
 import math
+import time
 from Bordures import X_MIN, X_MAX, Y_MIN, Y_MAX
 
 MAX_COLLISIONS = 3
 collisions_globales = 0
 
 CLASSES_AVIONS = {
-    "jet": {
-        "vmin": 180,
-        "vmax": 300,
-        "montee": 1200,
-        "descente": 1200,
-        "couleur": "bleu"
-    },
-    "ligne": {
-        "vmin": 140,
-        "vmax": 260,
-        "montee": 900,
-        "descente": 900,
-        "couleur": "vert"
-    },
-    "cargo": {
-        "vmin": 100,
-        "vmax": 200,
-        "montee": 700,
-        "descente": 700,
-        "couleur": "orange"
-    }
+    "jet": {"vmin": 180, "vmax": 300, "montee": 1200, "descente": 1200},
+    "ligne": {"vmin": 140, "vmax": 260, "montee": 900, "descente": 900},
+    "cargo": {"vmin": 100, "vmax": 200, "montee": 700, "descente": 700}
 }
 
 ICONS_AVIONS = {
@@ -64,94 +47,75 @@ class Avion:
         self.delta_montee = data["montee"]
         self.delta_descente = data["descente"]
 
-
         self.couleur = couleur
 
         self.altitude = altitude
         self.carburant = carburant
-        self.vitesse = max(self.vitesse_min, min(vitesse, self.vitesse_max))
         self.cap = cap
         self.id = id
         self.position = position
         self.altitude_limitesup = altitude_limitesup
         self.altitude_limiteinf = altitude_limiteinf
+
+        self.vitesse = max(self.vitesse_min, min(vitesse, self.vitesse_max))
+        self.vitesse_secours = self.vitesse * 0.4
+
+        self.timer_panne = None
         self.collisions = 0
 
-
-        if self.couleur not in ICONS_AVIONS[self.classe]:
-            self.couleur = "vert"
         self.icone = ICONS_AVIONS[self.classe][self.couleur]
-
-    def monter(self):
-        self.altitude += self.delta_montee
-        if self.altitude >= self.altitude_limitesup:
-            self.altitude = self.altitude_limitesup
-
-    def descendre(self):
-        self.altitude -= self.delta_descente
-        if self.altitude <= self.altitude_limiteinf:
-            self.altitude = self.altitude_limiteinf
-
-    def mettre_en_attente(self):
-        self.etat = "en attente"
-        self.vitesse = 0
-        print(f"Mise en attente : {self.id}")
-
-    def reprendre_vol(self, vitesse):
-        self.etat = "en vol"
-        self.vitesse = vitesse
-        print(f"Mise en vol : {self.id}")
-
-    def urgence(self):
-        self.etat = "en urgence"
-        print(f"{self.id} doit atterrir en urgence")
 
     def gerer_bordures(self):
         x, y = self.position
-
         taille = 30
 
-        # Bordure gauche
-        if x < X_MIN + taille:
-            x = X_MIN + taille
+        if x < X_MIN + taille or x > X_MAX - taille:
             self.cap = 180 - self.cap
 
-        # Bordure droite
-        elif x > X_MAX - taille:
-            x = X_MAX - taille
-            self.cap = 180 - self.cap
-
-        # Bordure haute
-        if y < Y_MIN + taille:
-            y = Y_MIN + taille
+        if y < Y_MIN + taille or y > Y_MAX - taille:
             self.cap = -self.cap
-
-        # Bordure basse
-        elif y > Y_MAX - taille:
-            y = Y_MAX - taille
-            self.cap = -self.cap
-
 
         self.cap = self.cap % 360
-
         self.position = (x, y)
 
     def update_position(self, dt):
-
-        if self.etat in ["en attente", "crash"]:
+        if self.etat == "crash":
             return
 
-        COEFF_VITESSE = 0.4
+        COEFF_VITESSE = 0.15
 
         dx = self.vitesse * COEFF_VITESSE * math.cos(math.radians(self.cap)) * dt
         dy = self.vitesse * COEFF_VITESSE * math.sin(math.radians(self.cap)) * dt
 
         x, y = self.position
-        x += dx
-        y += dy
-        self.position = (x, y)
+        self.position = (x + dx, y + dy)
 
         self.gerer_bordures()
+
+
+        self.carburant -= 0.02 * self.vitesse / 200
+
+
+        if self.carburant < 20 and self.couleur == "vert":
+            self.couleur = "orange"
+            self.icone = ICONS_AVIONS[self.classe]["orange"]
+
+
+        if self.carburant <= 0 and self.etat != "crash":
+            if self.etat != "panne_moteur":
+                self.etat = "panne_moteur"
+                self.couleur = "rouge"
+                self.icone = ICONS_AVIONS[self.classe]["rouge"]
+                self.vitesse = self.vitesse_secours
+                self.timer_panne = time.time()
+
+
+        if self.etat == "panne_moteur":
+            if time.time() - self.timer_panne > 10:
+                self.etat = "crash"
+                self.vitesse = 0
+                self.couleur = "noir"
+                self.icone = ICONS_AVIONS[self.classe]["noir"]
 
     def verifier_collision(self, autre_avion, distance_min=50):
         if self is autre_avion:
@@ -165,7 +129,6 @@ class Avion:
         distance = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
 
         if distance < distance_min:
-            print(f"COLLISION entre Avion {self.id} et Avion {autre_avion.id}")
             self.collisions += 1
             autre_avion.collisions += 1
 
@@ -177,10 +140,6 @@ class Avion:
 
             self.etat = "crash"
             autre_avion.etat = "crash"
-
-            self.vitesse = 0
-            autre_avion.vitesse = 0
-
             return True
 
         return False
@@ -191,15 +150,10 @@ def verifier_toutes_les_collisions(liste_avions):
 
     for i in range(len(liste_avions)):
         for j in range(i + 1, len(liste_avions)):
-            avion1 = liste_avions[i]
-            avion2 = liste_avions[j]
-
-            if avion1.verifier_collision(avion2):
+            if liste_avions[i].verifier_collision(liste_avions[j]):
                 collisions_globales += 1
                 print(f"COLLISIONS TOTALES : {collisions_globales}/{MAX_COLLISIONS}")
-
                 if collisions_globales >= MAX_COLLISIONS:
-                    print("3 COLLISIONS ATTEINTES = FIN DE PARTIE")
+                    print("FIN DE PARTIE")
                     return True
-
     return False

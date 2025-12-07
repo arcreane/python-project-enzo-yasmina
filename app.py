@@ -47,25 +47,35 @@ class MainWindow(BaseClass, Ui_MainWindow):
         self.spawn_timer.start(5000)  # 5 secondes
 
     def spawn_avion(self):
-        if len(self.avions) >= 5:
+        if len(self.avions) >= 10:
             return
 
         classe = random.choice(["jet", "ligne", "cargo"])
-        couleur = random.choice(["vert", "orange", "rouge"])
+
+        r = random.random()
+        if r < 0.02:
+            couleur = "rouge"
+        elif r < 0.12:
+            couleur = "orange"
+        else:
+            couleur = "vert"
+
+        carburant = random.randint(60, 100)
 
         avion = Avion(
             altitude=random.randint(5500, 8500),
-            carburant=100,
-            vitesse=random.randint(20, 60),
+            carburant=carburant,
+            vitesse=random.randint(150, 250),
             cap=random.randint(0, 360),
             id=len(self.avions),
-            position=(random.randint(80, 750), random.randint(80, 400)),
-            altitude_limitesup=9000,
-            altitude_limiteinf=5000,
+            position=(random.randint(50, 780), random.randint(50, 440)),
+            altitude_limitesup=10000,
+            altitude_limiteinf=3000,
             classe=classe,
             couleur=couleur,
             etat="en vol"
         )
+
 
         pixmap = QPixmap(avion.icone).scaled(60, 60)
         item = QGraphicsPixmapItem(pixmap)
@@ -73,6 +83,7 @@ class MainWindow(BaseClass, Ui_MainWindow):
         item.setPos(*avion.position)
 
         self.scene.addItem(item)
+
 
         self.avions.append(avion)
         self.plane_items.append(item)
@@ -82,7 +93,7 @@ class MainWindow(BaseClass, Ui_MainWindow):
         dt = min(now - self.last_time, 0.05)
         self.last_time = now
 
-        # ✅ Déplacement + affichage
+
         for avion, item in zip(self.avions, self.plane_items):
             avion.update_position(dt)
 
@@ -101,7 +112,7 @@ class MainWindow(BaseClass, Ui_MainWindow):
 
 
         if fin_du_jeu:
-            print("💀 FIN DE PARTIE 💀")
+            print("FIN DE PARTIE")
             self.timer.stop()
             self.spawn_timer.stop()
 

@@ -2,7 +2,7 @@ import sys
 import time
 import random
 from PySide6.QtWidgets import (
-    QApplication, QGraphicsScene, QGraphicsRectItem, QGraphicsPixmapItem, QMainWindow
+    QApplication, QGraphicsScene, QGraphicsRectItem, QGraphicsPixmapItem
 )
 from PySide6.QtGui import QColor, QPixmap
 from PySide6.QtUiTools import loadUiType
@@ -61,7 +61,7 @@ class MainWindow(BaseClass, Ui_MainWindow):
         # ✅ sélection souris
         self.scene.selectionChanged.connect(self.selection_changed)
 
-        # === CONNEXIONS BOUTONS ===
+        # === CONNEXIONS BOUTONS AVIONS ===
         if hasattr(self, "monter"):
             self.monter.clicked.connect(self.monter_relay)
         if hasattr(self, "descendre"):
@@ -74,18 +74,11 @@ class MainWindow(BaseClass, Ui_MainWindow):
             self.circuit.clicked.connect(self.mettre_en_attente_relay)
         if hasattr(self, "atterrir"):
             self.atterrir.clicked.connect(self.atterrir_relay)
-        if hasattr(self, "pause"):
-            self.pause.clicked.connect(self.pause_relay)
-        if hasattr(self, "quitter"):
-            self.quitter.clicked.connect(self.quitter_relay)
 
-        # === PAUSE / REPRENDRE ===
+        # === PAUSE / REPRENDRE (UN SEUL BOUTON) ===
         if hasattr(self, "pause"):
-            self.pause.clicked.connect(self.pause_relay)
-
-        if hasattr(self, "reprendre"):
-            self.reprendre.clicked.connect(self.reprendre_jeu_relay)
-            self.reprendre.setEnabled(False)  # ✅ bloqué au départ
+            self.pause.clicked.connect(self.pause_toggle)
+            self.pause.setText("Pause")
 
         # === QUITTER ===
         if hasattr(self, "btnQuitter"):
@@ -186,7 +179,6 @@ class MainWindow(BaseClass, Ui_MainWindow):
 
         if not items:
             self.avion_en_cours = None
-            print("Aucun avion sélectionné")
             return
 
         item = items[0]
@@ -226,28 +218,21 @@ class MainWindow(BaseClass, Ui_MainWindow):
     # -------------------------
     # PAUSE / REPRENDRE
     # -------------------------
-    def pause_relay(self):
+    def pause_toggle(self):
         if not self.en_pause:
             self.en_pause = True
             self.timer.stop()
             self.spawn_timer.stop()
-
-            if hasattr(self, "reprendre"):
-                self.reprendre.setEnabled(True)
-
+            if hasattr(self, "pause"):
+                self.pause.setText("Reprendre")
             print("JEU EN PAUSE")
-
-    def reprendre_jeu_relay(self):
-        if self.en_pause:
+        else:
             self.en_pause = False
             self.last_time = time.time()
-
             self.timer.start(30)
             self.spawn_timer.start(5000)
-
-            if hasattr(self, "reprendre"):
-                self.reprendre.setEnabled(False)
-
+            if hasattr(self, "pause"):
+                self.pause.setText("Pause")
             print("JEU REPRIS")
 
 
@@ -260,4 +245,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

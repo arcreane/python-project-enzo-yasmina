@@ -155,6 +155,9 @@ class MainWindow(BaseClass, Ui_MainWindow):
         dt = min(now - self.last_time, 0.05)
         self.last_time = now
 
+        avions_a_supprimer = []
+        items_a_supprimer = []
+
         for avion, item in zip(self.avions, self.plane_items):
             avion.update_position(dt)
 
@@ -162,6 +165,7 @@ class MainWindow(BaseClass, Ui_MainWindow):
             item.setPos(x, y)
             item.setRotation(avion.cap - 270)
 
+            # ✅ Mise à jour de l’icône si elle change
             if not hasattr(avion, "icone_affichee") or avion.icone_affichee != avion.icone:
                 pix = QPixmap(avion.icone)
                 if pix.isNull():
@@ -169,13 +173,31 @@ class MainWindow(BaseClass, Ui_MainWindow):
                 item.setPixmap(pix.scaled(60, 60))
                 avion.icone_affichee = avion.icone
 
+            # ✅ Marquage pour suppression
+            if avion.etat in ["crash", "atterri"]:
+                avions_a_supprimer.append(avion)
+                items_a_supprimer.append(item)
+
+        # ✅ Suppression réelle après la boucle
+        for avion, item in zip(avions_a_supprimer, items_a_supprimer):
+            self.avions.remove(avion)
+            self.plane_items.remove(item)
+            self.scene.removeItem(item)
+
+            if self.avion_en_cours == avion:
+                self.avion_en_cours = None
+
+        # ✅ Vérification des collisions
         fin_du_jeu = verifier_toutes_les_collisions(self.avions)
         if fin_du_jeu:
             print("FIN DE PARTIE")
             self.timer.stop()
             self.spawn_timer.stop()
 
-        self.afficher_infos_avion()   # ✅ MAJ INFOS EN DIRECT
+        # ✅ Mise à jour des infos sélectionnées
+        self.afficher_infos_avion()
+
+    # ✅ MAJ INFOS EN DIRECT
 
     # -------------------------
     # SÉLECTION SOURIS

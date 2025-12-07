@@ -4,7 +4,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtGui import QColor,QPixmap
 from PySide6.QtUiTools import loadUiType
-avion_image=QGraphicsPixmapItem(QPixmap("avion.png"))
+avion_image=QGraphicsPixmapItem(QPixmap("avion_cargo_noir"))
 
 Ui_MainWindow, BaseClass = loadUiType("mainwindow.ui")
 

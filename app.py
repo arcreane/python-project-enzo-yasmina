@@ -22,7 +22,6 @@ class MainWindow(BaseClass, Ui_MainWindow):
         # === scène ===
         self.scene = QGraphicsScene(0, 0, 832, 480)
         self.scene.setBackgroundBrush(QColor(30, 30, 30))
-        # Zonedevol doit être le nom du QGraphicsView dans ton UI
         self.Zonedevol.setScene(self.scene)
 
         # piste
@@ -34,29 +33,35 @@ class MainWindow(BaseClass, Ui_MainWindow):
         # listes
         self.avions = []
         self.plane_items = []
+        self.avion_en_cours = None
 
         # id auto
         self.next_id = 0
 
-        # pixmap de base (fallback)
+        # limite max avions
+        self.max_avions = 10
+
+        # pixmap de base
         self.base_pixmap = QPixmap("assets/avions/avion_jet_orange.png").scaled(60, 60)
 
         # timers
         self.last_time = time.time()
+
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_game)
-        self.timer.start(30)  # ~33 FPS
+        self.timer.start(30)
 
         self.spawn_timer = QTimer()
         self.spawn_timer.timeout.connect(self.spawn_avion)
-        self.spawn_timer.start(5000)  # 5s
+        self.spawn_timer.start(5000)
 
         # focus clavier
         self.setFocusPolicy(Qt.StrongFocus)
 
-        # === Connexions boutons (SI ils existent dans ton UI) ===
-        # Les noms btnMonter etc doivent correspondre aux noms dans Qt Designer.
-        # Si ton pote a d'autres noms, il suffit de remplacer les noms ici.
+        # ✅ sélection souris
+        self.scene.selectionChanged.connect(self.selection_changed)
+
+        # === Connexions boutons ===
         if hasattr(self, "btnMonter"):
             self.btnMonter.clicked.connect(self.monter_relay)
         if hasattr(self, "btnDescendre"):
@@ -72,11 +77,8 @@ class MainWindow(BaseClass, Ui_MainWindow):
         if hasattr(self, "btnAtterrir"):
             self.btnAtterrir.clicked.connect(self.atterrir_relay)
 
-        # limite max avions
-        self.max_avions = 10
-
     # -------------------------
-    # spawn
+    # SPAWN AVION
     # -------------------------
     def spawn_avion(self):
         if len(self.avions) >= self.max_avions:
@@ -109,26 +111,32 @@ class MainWindow(BaseClass, Ui_MainWindow):
         )
         self.next_id += 1
 
-        # création graphique unique
         pixmap = QPixmap(avion.icone)
         if pixmap.isNull():
             pixmap = self.base_pixmap
+
         pixmap = pixmap.scaled(60, 60)
         item = QGraphicsPixmapItem(pixmap)
         item.setTransformOriginPoint(30, 30)
         item.setPos(*avion.position)
 
+        # ✅ sélection souris activée
+        item.setFlag(QGraphicsPixmapItem.ItemIsSelectable, True)
+        item.setFlag(QGraphicsPixmapItem.ItemIsFocusable, True)
+
         self.scene.addItem(item)
+
         self.avions.append(avion)
         self.plane_items.append(item)
 
-
+    # -------------------------
+    # UPDATE
+    # -------------------------
     def update_game(self):
         now = time.time()
         dt = min(now - self.last_time, 0.05)
         self.last_time = now
 
-        # update avions + icons
         for avion, item in zip(self.avions, self.plane_items):
             avion.update_position(dt)
 
@@ -136,64 +144,68 @@ class MainWindow(BaseClass, Ui_MainWindow):
             item.setPos(x, y)
             item.setRotation(avion.cap - 270)
 
-            # mise à jour icône uniquement si changé (économie)
-            if not hasattr(avion, "icone_affichee") or avion.icone_affichee != getattr(avion, "icone", ""):
-                pix = QPixmap(getattr(avion, "icone", ""))
+            if not hasattr(avion, "icone_affichee") or avion.icone_affichee != avion.icone:
+                pix = QPixmap(avion.icone)
                 if pix.isNull():
                     pix = self.base_pixmap
                 item.setPixmap(pix.scaled(60, 60))
                 avion.icone_affichee = avion.icone
 
-        # collisions globales
         fin_du_jeu = verifier_toutes_les_collisions(self.avions)
-
         if fin_du_jeu:
             print("FIN DE PARTIE")
             self.timer.stop()
             self.spawn_timer.stop()
 
+    # -------------------------
+    # ✅ SÉLECTION SOURIS RÉELLE
+    # -------------------------
+    def selection_changed(self):
+        items = self.scene.selectedItems()
 
-    def avion_selectionne(self):
-        # pour l'instant on retourne le 1er avion s'il existe
-        # plus tard on peut renvoyer l'avion sélectionné par la souris
-        if self.avions:
-            return self.avions[0]
-        return None
+        if not items:
+            self.avion_en_cours = None
+            print("Aucun avion sélectionné")
+            return
 
+        item = items[0]
+
+        if item in self.plane_items:
+            index = self.plane_items.index(item)
+            self.avion_en_cours = self.avions[index]
+            print(f"✈ Avion {self.avion_en_cours.id} sélectionné")
+
+    # -------------------------
+    # RELAYS BOUTONS
+    # -------------------------
     def monter_relay(self):
-        a = self.avion_selectionne()
-        if a:
-            a.monter()
+        if self.avion_en_cours:
+            self.avion_en_cours.monter()
 
     def descendre_relay(self):
-        a = self.avion_selectionne()
-        if a:
-            a.descendre()
+        if self.avion_en_cours:
+            self.avion_en_cours.descendre()
 
     def accelerer_relay(self):
-        a = self.avion_selectionne()
-        if a:
-            a.accelerer()
+        if self.avion_en_cours:
+            self.avion_en_cours.accelerer()
 
     def decelerer_relay(self):
-        a = self.avion_selectionne()
-        if a:
-            a.decelerer()
+        if self.avion_en_cours:
+            self.avion_en_cours.decelerer()
 
     def mettre_en_attente_relay(self):
-        a = self.avion_selectionne()
-        if a:
-            a.mettre_en_attente()
+        if self.avion_en_cours:
+            self.avion_en_cours.mettre_en_attente()
 
     def reprendre_vol_relay(self):
-        a = self.avion_selectionne()
-        if a:
-            a.reprendre_vol()
+        if self.avion_en_cours:
+            self.avion_en_cours.reprendre_vol()
 
     def atterrir_relay(self):
-        a = self.avion_selectionne()
-        if a:
-            a.atterrir()
+        if self.avion_en_cours:
+            self.avion_en_cours.atterrir()
+
 
 def main():
     app = QApplication(sys.argv)
@@ -204,3 +216,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+<

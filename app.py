@@ -2,10 +2,9 @@ import sys
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QGraphicsScene, QGraphicsRectItem
 )
-from PySide6.QtGui import QColor
+from PySide6.QtGui import QColor,QPixmap
 from PySide6.QtUiTools import loadUiType
-from PySide6.QtCore import QTimer
-import math
+
 
 Ui_MainWindow, BaseClass = loadUiType("mainwindow.ui")
 

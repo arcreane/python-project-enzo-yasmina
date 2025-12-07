@@ -18,16 +18,12 @@ class MainWindow(BaseClass, Ui_MainWindow):
         super().__init__()
         self.setupUi(self)
 
-        # =========================
-        # SCÈNE
-        # =========================
+
         self.scene = QGraphicsScene(0, 0, 832, 480)
         self.scene.setBackgroundBrush(QColor(30, 30, 30))
         self.Zonedevol.setScene(self.scene)
 
-        # =========================
-        # PISTE
-        # =========================
+
         runway_width = 200
         runway_height = 30
         self.runway = QGraphicsRectItem(0, 0, runway_width, runway_height)
@@ -39,9 +35,7 @@ class MainWindow(BaseClass, Ui_MainWindow):
 
         self.scene.addItem(self.runway)
 
-        # =========================
-        # AVION LOGIQUE
-        # =========================
+
         self.avion = Avion(
             altitude=7000,
             carburant=100,
@@ -55,9 +49,7 @@ class MainWindow(BaseClass, Ui_MainWindow):
             etat="en vol"
         )
 
-        # =========================
-        # AVION GRAPHIQUE (PNG)
-        # =========================
+
         pixmap = QPixmap("assets/avions/avion_jet_orange.png")
 
         if pixmap.isNull():
@@ -68,23 +60,21 @@ class MainWindow(BaseClass, Ui_MainWindow):
         self.plane_item = QGraphicsPixmapItem(pixmap)
         self.scene.addItem(self.plane_item)
 
-        # ✅ CENTRAGE DU POINT DE ROTATION SUR L’ITEM
+
         self.plane_item.setTransformOriginPoint(
             self.plane_item.boundingRect().center()
         )
 
-        # ✅ POSITION INITIALE SYNC AVEC L’AVION
+
         x, y = self.avion.position
         self.plane_item.setPos(x, y)
 
-        # =========================
-        # TIMER DE JEU
-        # =========================
+
         self.last_time = time.time()
 
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_game)
-        self.timer.start(30)  # 30 ms ≈ 33 FPS ✅
+        self.timer.start(30)
 
 
     def update_game(self):
@@ -92,15 +82,15 @@ class MainWindow(BaseClass, Ui_MainWindow):
         dt = now - self.last_time
         self.last_time = now
 
-        # ✅ MISE À JOUR LOGIQUE
+
         self.avion.update_position(dt)
 
-        # ✅ MISE À JOUR GRAPHIQUE
+
         x, y = self.avion.position
         self.plane_item.setPos(x, y)
 
-        # ✅ SYNCHRO ROTATION AVEC LE CAP
-        self.plane_item.setRotation(self.avion.cap)
+
+        self.plane_item.setRotation(self.avion.cap-270)
 
 
 def main():

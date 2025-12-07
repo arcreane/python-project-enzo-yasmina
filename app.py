@@ -54,7 +54,7 @@ class MainWindow(BaseClass, Ui_MainWindow):
         self.spawn_timer = QTimer()
         self.spawn_timer.timeout.connect(self.spawn_avion)
         self.spawn_timer.start(5000)
-
+        self.en_pause = False
         # focus clavier
         self.setFocusPolicy(Qt.StrongFocus)
 
@@ -75,6 +75,12 @@ class MainWindow(BaseClass, Ui_MainWindow):
 
         if hasattr(self, "atterrir"):
             self.atterrir.clicked.connect(self.atterrir_relay)
+
+        if hasattr(self, "pause"):
+            self.pause.clicked.connect(self.pause_relay)
+
+        if hasattr(self, "reprendre"):
+            self.reprendre.clicked.connect(self.reprendre_jeu_relay)
 
     # -------------------------
     # SPAWN AVION
@@ -132,6 +138,9 @@ class MainWindow(BaseClass, Ui_MainWindow):
     # UPDATE
     # -------------------------
     def update_game(self):
+        if self.en_pause:
+            return
+
         now = time.time()
         dt = min(now - self.last_time, 0.05)
         self.last_time = now
@@ -205,8 +214,20 @@ class MainWindow(BaseClass, Ui_MainWindow):
         if self.avion_en_cours:
             self.avion_en_cours.atterrir()
 
+    def pause_relay(self):
+        if not self.en_pause:
+            self.en_pause = True
+            self.timer.stop()
+            self.spawn_timer.stop()
+            print("JEU EN PAUSE")
 
-
+    def reprendre_jeu_relay(self):
+        if self.en_pause:
+            self.en_pause = False
+            self.last_time = time.time()  # ✅ empêche le bond temporel
+            self.timer.start(30)
+            self.spawn_timer.start(5000)
+            print("JEU REPRIS")
 
 
 def main():

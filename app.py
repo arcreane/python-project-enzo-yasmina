@@ -35,8 +35,9 @@ class MainWindow(BaseClass, Ui_MainWindow):
         # Ajout dans la scène
         self.scene.addItem(self.runway)
 
-        self.plane = QGraphicsPixmapItem(QPixmap("avion_jet_orange.png"))
-        self.plane.setPos(100, 100)  # position initiale
+        pixmap = QPixmap("assets/avions/avion_jet_orange.png").scaled(40,40)
+        self.plane = QGraphicsPixmapItem(pixmap)
+        self.plane.setPos(100, 100)
         self.scene.addItem(self.plane)
 
 

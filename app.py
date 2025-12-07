@@ -169,6 +169,8 @@ class MainWindow(BaseClass, Ui_MainWindow):
             self.timer.stop()
             self.spawn_timer.stop()
 
+        self.afficher_infos_avion()   # ✅ MAJ INFOS EN DIRECT
+
     # -------------------------
     # SÉLECTION SOURIS
     # -------------------------
@@ -177,6 +179,7 @@ class MainWindow(BaseClass, Ui_MainWindow):
 
         if not items:
             self.avion_en_cours = None
+            self.afficher_infos_avion()
             return
 
         item = items[0]
@@ -185,6 +188,25 @@ class MainWindow(BaseClass, Ui_MainWindow):
             index = self.plane_items.index(item)
             self.avion_en_cours = self.avions[index]
             print(f"✈ Avion {self.avion_en_cours.id} sélectionné")
+            self.afficher_infos_avion()
+
+    # -------------------------
+    # AFFICHAGE INFOS AVION ✅
+    # -------------------------
+    def afficher_infos_avion(self):
+        if not self.avion_en_cours:
+            if hasattr(self, "altitude"):
+                self.altitude.setText("—")
+                self.carburant.setText("—")
+                self.vitesse.setText("—")
+            return
+
+        a = self.avion_en_cours
+
+        if hasattr(self, "altitude"):
+            self.altitude.setText(f"{int(a.altitude)} m")
+            self.carburant.setText(f"{int(a.carburant)} %")
+            self.vitesse.setText(f"{int(a.vitesse)} km/h")
 
     # -------------------------
     # RELAYS AVIONS

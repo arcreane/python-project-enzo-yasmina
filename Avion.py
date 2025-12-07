@@ -141,12 +141,12 @@ class Avion:
         self.temps_panne = time.time()
         self.couleur = "rouge"
         self.icone = ICONS_AVIONS[self.classe]["rouge"]
-        print(f"🚨 PANNE MOTEUR Avion {self.id}")
+        print(f"PANNE MOTEUR Avion {self.id}")
 
     # -------------------------
     # COLLISION
     # -------------------------
-    def verifier_collision(self, autre, distance_min=50):
+    def verifier_collision(self, autre, distance_min=50, seuil_altitude=300):
 
         if self is autre:
             return False
@@ -154,11 +154,19 @@ class Avion:
         if self.etat == "crash" or autre.etat == "crash":
             return False
 
+        # ✅ Différence d'altitude
+        diff_altitude = abs(self.altitude - autre.altitude)
+
+        if diff_altitude > seuil_altitude:
+            return False
+
+        # ✅ Distance horizontale
         x1, y1 = self.position
         x2, y2 = autre.position
 
         if math.hypot(x2 - x1, y2 - y1) < distance_min:
             print(f"💥 COLLISION {self.id} <-> {autre.id}")
+
             self.etat = "crash"
             autre.etat = "crash"
 

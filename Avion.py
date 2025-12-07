@@ -61,15 +61,13 @@ class Avion:
         self.altitude_limitesup = altitude_limitesup
         self.altitude_limiteinf = altitude_limiteinf
 
-        self.collisions = 0
-
         self.en_panne = False
         self.temps_panne = None
         self.vitesse_secours = self.vitesse * 0.4
 
-
-
-
+    # -------------------------
+    # COMMANDES
+    # -------------------------
     def monter(self):
         self.altitude = min(self.altitude + self.delta_montee, self.altitude_limitesup)
 
@@ -82,24 +80,14 @@ class Avion:
     def decelerer(self):
         self.vitesse = max(self.vitesse - 50, self.vitesse_min)
 
-    def mettre_en_attente(self):
-        self.etat = "en attente"
-        self.vitesse = 0
-        print(f"⏸ Avion {self.id} en attente")
-
-    def reprendre_vol(self):
-        self.etat = "en vol"
-        self.vitesse = self.vitesse_min
-        print(f"▶ Avion {self.id} reprend le vol")
-
     def atterrir(self):
         self.etat = "atterri"
         self.vitesse = 0
-        print(f"🛬 Avion {self.id} est sur le point d'atterrir")
+        print(f"🛬 Avion {self.id} a atterri")
 
-
-
-
+    # -------------------------
+    # BORDURES
+    # -------------------------
     def gerer_bordures(self):
         x, y = self.position
         taille = 30
@@ -113,16 +101,15 @@ class Avion:
         self.cap %= 360
         self.position = (x, y)
 
-
+    # -------------------------
+    # MOUVEMENT PRINCIPAL
+    # -------------------------
     def update_position(self, dt):
 
-        if self.etat in ["crash", "atterri", "en attente"]:
+        if self.etat in ["crash", "atterri"]:
             return
 
-
-
         self.carburant -= dt * 0.8
-
 
         if self.carburant <= 15 and not self.en_panne:
             self.declencher_panne()
@@ -137,7 +124,6 @@ class Avion:
                 print(f"Avion {self.id} détruit")
                 return
 
-
         COEFF_VITESSE = 0.15
         dx = self.vitesse * COEFF_VITESSE * math.cos(math.radians(self.cap)) * dt
         dy = self.vitesse * COEFF_VITESSE * math.sin(math.radians(self.cap)) * dt
@@ -147,17 +133,19 @@ class Avion:
 
         self.gerer_bordures()
 
-
+    # -------------------------
+    # PANNE
+    # -------------------------
     def declencher_panne(self):
         self.en_panne = True
         self.temps_panne = time.time()
         self.couleur = "rouge"
         self.icone = ICONS_AVIONS[self.classe]["rouge"]
-        print(f"PANNE MOTEUR Avion {self.id}")
+        print(f"🚨 PANNE MOTEUR Avion {self.id}")
 
-
-
-
+    # -------------------------
+    # COLLISION
+    # -------------------------
     def verifier_collision(self, autre, distance_min=50):
 
         if self is autre:
@@ -170,7 +158,7 @@ class Avion:
         x2, y2 = autre.position
 
         if math.hypot(x2 - x1, y2 - y1) < distance_min:
-            print(f"COLLISION {self.id} <-> {autre.id}")
+            print(f"💥 COLLISION {self.id} <-> {autre.id}")
             self.etat = "crash"
             autre.etat = "crash"
 
@@ -185,6 +173,9 @@ class Avion:
         return False
 
 
+# -------------------------
+# COLLISIONS GLOBALES
+# -------------------------
 def verifier_toutes_les_collisions(liste_avions):
     global collisions_globales
 

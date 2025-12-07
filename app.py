@@ -70,8 +70,6 @@ class MainWindow(BaseClass, Ui_MainWindow):
             self.accelerer.clicked.connect(self.accelerer_relay)
         if hasattr(self, "decelerer"):
             self.decelerer.clicked.connect(self.deceler_relay)
-        if hasattr(self, "circuit"):
-            self.circuit.clicked.connect(self.mettre_en_attente_relay)
         if hasattr(self, "atterrir"):
             self.atterrir.clicked.connect(self.atterrir_relay)
 
@@ -206,10 +204,6 @@ class MainWindow(BaseClass, Ui_MainWindow):
     def deceler_relay(self):
         if self.avion_en_cours:
             self.avion_en_cours.decelerer()
-
-    def mettre_en_attente_relay(self):
-        if self.avion_en_cours:
-            self.avion_en_cours.mettre_en_attente()
 
     def atterrir_relay(self):
         if self.avion_en_cours:

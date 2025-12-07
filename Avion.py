@@ -83,7 +83,7 @@ class Avion:
     def atterrir(self):
         self.etat = "atterri"
         self.vitesse = 0
-        print(f"🛬 Avion {self.id} a atterri")
+        print(f"🛬 Avion {self.id} est sur le point d'atterrir")
 
     # -------------------------
     # BORDURES

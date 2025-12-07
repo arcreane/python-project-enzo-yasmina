@@ -258,8 +258,6 @@ def main():
     sys.exit(app.exec())
 
 
-    def quitter_relay(self):
-        QApplication.quit()
-
 if __name__ == "__main__":
     main()
+

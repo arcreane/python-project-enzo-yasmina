@@ -83,7 +83,7 @@ class FenetreFinJeu(QDialog):
             stats.setAlignment(Qt.AlignCenter)
             layout.addWidget(stats)
         else:
-            # DÉFAITE
+
             titre = QLabel("💥 GAME OVER 💥")
             titre.setStyleSheet("font-size: 24px; font-weight: bold; color: red; margin: 20px;")
             titre.setAlignment(Qt.AlignCenter)

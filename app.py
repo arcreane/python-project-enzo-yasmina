@@ -205,15 +205,11 @@ class MainWindow(BaseClass, Ui_MainWindow):
         # Afficher les stats initiales
         self.afficher_stats()
 
-    # -------------------------
     # QUITTER
-    # -------------------------
     def quitter_relay(self):
         self.close()
 
-    # -------------------------
     # SPAWN AVION
-    # -------------------------
     def spawn_avion(self):
         if len(self.avions) >= self.max_avions or self.en_pause:
             return
@@ -261,9 +257,7 @@ class MainWindow(BaseClass, Ui_MainWindow):
         self.avions.append(avion)
         self.plane_items.append(item)
 
-    # -------------------------
     # UPDATE
-    # -------------------------
     def update_game(self):
         if self.en_pause:
             return
@@ -326,9 +320,7 @@ class MainWindow(BaseClass, Ui_MainWindow):
         self.afficher_infos_avion()
         self.afficher_stats()
 
-    # -------------------------
     # SÉLECTION SOURIS
-    # -------------------------
     def selection_changed(self):
         items = self.scene.selectedItems()
 
@@ -345,9 +337,7 @@ class MainWindow(BaseClass, Ui_MainWindow):
             print(f"✈ Avion {self.avion_en_cours.id} sélectionné")
             self.afficher_infos_avion()
 
-    # -------------------------
     # AFFICHAGE INFOS AVION
-    # -------------------------
     def afficher_infos_avion(self):
         if not self.avion_en_cours:
             if hasattr(self, "altitude"):
@@ -375,9 +365,9 @@ class MainWindow(BaseClass, Ui_MainWindow):
             else:
                 self.jaugeCarburant.setStyleSheet("QProgressBar::chunk { background-color: green; }")
 
-    # -------------------------
+
     # AFFICHAGE STATS
-    # -------------------------
+
     def afficher_stats(self):
         """Affiche les statistiques de jeu"""
         if hasattr(self, "labelPoses"):
@@ -385,9 +375,9 @@ class MainWindow(BaseClass, Ui_MainWindow):
         if hasattr(self, "labelCrashes"):
             self.labelCrashes.setText(f"{self.avions_crashes}")
 
-    # -------------------------
+
     # FIN DE JEU
-    # -------------------------
+
     def fin_jeu(self, victoire=True):
         """Affiche la fenêtre de fin de jeu"""
         # Arrêter tous les timers
@@ -413,10 +403,8 @@ class MainWindow(BaseClass, Ui_MainWindow):
                 self.changer_difficulte(menu.difficulte_choisie)
         else:  # Quitter
             self.close()
-
-    # -------------------------
     # DIFFICULTÉ
-    # -------------------------
+
     def changer_difficulte(self, niveau):
         """Change la difficulté du jeu"""
         self.difficulte = niveau
@@ -431,9 +419,9 @@ class MainWindow(BaseClass, Ui_MainWindow):
         if hasattr(self, "labelDifficulte"):
             self.labelDifficulte.setText(f"Difficulté : {niveau.capitalize()}")
 
-    # -------------------------
+
     # RELAYS AVIONS
-    # -------------------------
+
     def monter_relay(self):
         if self.avion_en_cours:
             self.avion_en_cours.monter()
@@ -454,9 +442,7 @@ class MainWindow(BaseClass, Ui_MainWindow):
         if self.avion_en_cours:
             self.avion_en_cours.atterrir()
 
-    # -------------------------
     # PAUSE / REPRENDRE
-    # -------------------------
     def pause_toggle(self):
         if not self.en_pause:
             self.en_pause = True
@@ -476,9 +462,8 @@ class MainWindow(BaseClass, Ui_MainWindow):
                 self.pause.setText("Pause")
             print("JEU REPRIS")
 
-    # -------------------------
+
     # RECOMMENCER
-    # -------------------------
     def recommencer(self):
         """Remet le jeu à zéro"""
         self.timer.stop()
@@ -514,9 +499,7 @@ class MainWindow(BaseClass, Ui_MainWindow):
 
         print("🔄 JEU REDÉMARRÉ")
 
-    # -------------------------
     # UPDATE NIVEAU
-    # -------------------------
     def update_niveau(self):
         """Met à jour le timer de niveau"""
         if self.en_pause:
